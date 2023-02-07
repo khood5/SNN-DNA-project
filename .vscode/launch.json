@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: preprocess with args",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/preprocess.py",
+            "console": "integratedTerminal",
+            "args" : ["data", "data/9-5mmSpikeTrains", "--binary", "--settings", "settings9-5mm.csv"],
+            "justMyCode": true
+        },
+        {
+            "name": "Python: preprocess only i/o directories",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/preprocess.py",
+            "console": "integratedTerminal",
+            "args" : ["data", "."],
+            "justMyCode": true
+        }
+    ]
+}
