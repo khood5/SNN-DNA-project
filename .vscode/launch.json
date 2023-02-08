@@ -22,12 +22,12 @@
             "justMyCode": true
         },
         {
-            "name": "Python: preprocess only i/o directories",
+            "name": "Python: preprocess with data/3mm_9.24pN",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/preprocess.py",
             "console": "integratedTerminal",
-            "args" : ["data", "."],
+            "args" : ["data/3mm_9.24pN", ".", "--binary", "--settings", "settings9-5mm.csv"],
             "justMyCode": true
         }
     ]

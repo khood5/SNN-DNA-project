@@ -2,6 +2,7 @@ import pandas as pd
 from pathlib import Path  
 import argparse
 from argparse import RawTextHelpFormatter
+from datetime import datetime
 import os
 import csv
 
@@ -79,7 +80,13 @@ class Settings:
             if not hasattr(cls, 'instance'):
                     cls.instance = super(Settings, cls).__new__(cls)
             return cls.instance 
-
+    def save_settings(self):
+                dt_string = datetime.now().strftime("%d.%m.%Y_%H-%M-%S-%f")
+                f = open(f"./preprocess_{dt_string}_saved_args.csv", "w+")
+                f.write("_INPUT_DIRECTORY,_OUTPUT_DIRECTORY,_BINARY,_SETTINGS_FILE,_LENGTH,_FPS\n")
+                f.write(f"{self._INPUT_DIRECTORY},{self._OUTPUT_DIRECTORY},{self._BINARY},{self._SETTINGS_FILE},{self._LENGTH},{self._FPS}\n")
+                f.write(f"run at {dt_string}")
+                f.close()
         
 if __name__ == "__main__":
     DEFAULT_FPS = 20
@@ -137,6 +144,9 @@ if __name__ == "__main__":
         spikeTrain = convertExcelToSpikeTrain(f)
         wrtieSpikeTrainToFile(spikeTrain, f"spikeTrain_{fileNameNumber}.csv", "index.csv")
         fileNameNumber += 1
+    
+    settings.save_settings()
+    
         
         
     
