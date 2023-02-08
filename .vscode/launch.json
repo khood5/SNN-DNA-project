@@ -18,7 +18,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/preprocess.py",
             "console": "integratedTerminal",
-            "args" : ["data", "data/9-5mmSpikeTrains", "--binary", "--settings", "settings9-5mm.csv"],
+            "args" : ["data", ".", "--binary", "--settings", "settings9-5mm.csv"],
             "justMyCode": true
         },
         {
