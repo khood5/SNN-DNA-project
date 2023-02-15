@@ -16,18 +16,18 @@
             "name": "Python: preprocess with args",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/preprocess.py",
+            "program": "${workspaceFolder}/Prepocessing/preprocess.py",
             "console": "integratedTerminal",
-            "args" : ["data", ".", "--binary", "--settings", "settings9-5mm.csv"],
+            "args" : ["Prepocessing/data", ".", "--binary", "--settings", "Prepocessing/settings9-5mm.csv"],
             "justMyCode": true
         },
         {
             "name": "Python: preprocess with data/3mm_9.24pN",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/preprocess.py",
+            "program": "${workspaceFolder}/Prepocessing/preprocess.py",
             "console": "integratedTerminal",
-            "args" : ["data/3mm_9.24pN", ".", "--binary", "--settings", "settings9-5mm.csv"],
+            "args" : ["./Prepocessing/data/test", "./Prepocessing/data/test/output", "--binary", "--settings", "Prepocessing/settings3mm.csv"],
             "justMyCode": true
         }
     ]

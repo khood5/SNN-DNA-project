@@ -14,7 +14,6 @@ mkdir -p "$OUTPUT_DIR/1.5-SpikeTrains"
 
 rm -rf "$OUTPUT_DIR/*"
 
-
 python preprocess.py "$INPUT_DIR/9mm_0.002pN" "$OUTPUT_DIR/9-SpikeTrains" --binary --settings settings9-5mm.csv --length 150
 python preprocess.py "$INPUT_DIR/5mm_1.46pN" "$OUTPUT_DIR/5-SpikeTrains" --binary --settings settings9-5mm.csv --length 150
 python preprocess.py "$INPUT_DIR/3mm_9.24pN" "$OUTPUT_DIR/3-SpikeTrains" --binary --settings settings3mm.csv --length 150

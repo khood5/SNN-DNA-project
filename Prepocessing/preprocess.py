@@ -18,32 +18,31 @@ def convertExcelToSpikeTrain(file: str):
         arrayOfZeros = numberOfMissingFrames * [0]
         currentSpikeEvent = [1] if settings._BINARY == True else [file_df.iloc[l]["Intesity"]] 
         frames += arrayOfZeros + currentSpikeEvent # missing frame are 0s plus the current frame
-    # frames += [1] if settings._BINARY == True else [file_df.iloc[-1]["Intesity"]] 
     return frames
 
 def shorten(file_df: pd.DataFrame):
     settings = Settings()
-    cutoffIndex = 0
-    lastFrame = file_df.iloc[cutoffIndex]["Frame Number"]
-    while lastFrame*(1/settings._FPS) < settings._LENGTH:
-        cutoffIndex += 1
+    cutoffIndex = 1
+    lastFrame = file_df.iloc[0]["Frame Number"]
+    while lastFrame*(1/settings._FPS) < settings._LENGTH and cutoffIndex < len(file_df):
         lastFrame = file_df.iloc[cutoffIndex]["Frame Number"]
+        cutoffIndex += 1
     file_df = file_df.drop(list(range(cutoffIndex, len(file_df))))
     return file_df
 
 # note: that depending on weather or not the spike train is binary or base on intesity the values in "spikeTrain" can be either 1/0 or double/0
 # see binary argument for more details
-def wrtieSpikeTrainToFile(spikeTrain: list, filename: str, indexFile: str):
+def wrtieSpikeTrainToFile(spikeTrain: list, SpikeTrainFilename: str, sourceFilename: str, indexFile: str):
     settings = Settings()
-    outputSpikeTrainFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",filename)
+    outputSpikeTrainFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",SpikeTrainFilename)
     with open(outputSpikeTrainFile, 'w+', newline='') as outFile:
         write = csv.writer(outFile)
         for spike in spikeTrain : write.writerow ([spike])
 
     outputIndexFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",indexFile)
-    totalNumberOfEvents = sum([1 for spike in spikeTrain if spike > 0])
+    totalNumberOfEvents = len(pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,sourceFilename),header=None,names=["Frame Number", "Intesity"]))
     indexes.append([outputSpikeTrainFile,getClassOfSpikeTrain(totalNumberOfEvents)])
-    with open(outputIndexFile, 'a+', newline='') as outFile:
+    with open(outputIndexFile, 'w+', newline='') as outFile:
         write = csv.writer(outFile)
         write.writerows(indexes)
 
@@ -142,7 +141,7 @@ if __name__ == "__main__":
         if f.split(".")[-1] not in supported_file_types:
             continue # skip none excel files
         spikeTrain = convertExcelToSpikeTrain(f)
-        wrtieSpikeTrainToFile(spikeTrain, f"spikeTrain_{fileNameNumber}.csv", "index.csv")
+        wrtieSpikeTrainToFile(spikeTrain, f"spikeTrain_{fileNameNumber}.csv", f, "index.csv")
         fileNameNumber += 1
     
     settings.save_settings()
