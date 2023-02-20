@@ -18,16 +18,18 @@ def convertExcelToSpikeTrain(file: str):
         arrayOfZeros = numberOfMissingFrames * [0]
         currentSpikeEvent = [1] if settings._BINARY == True else [file_df.iloc[l]["Intesity"]] 
         frames += arrayOfZeros + currentSpikeEvent # missing frame are 0s plus the current frame
+    missingEventsFromEndOfExperment = int((settings._LENGTH * settings._FPS) - len(frames))
+    frames += [0] * missingEventsFromEndOfExperment
     return frames
 
 def shorten(file_df: pd.DataFrame):
     settings = Settings()
     cutoffIndex = 1
     lastFrame = file_df.iloc[0]["Frame Number"]
-    while lastFrame*(1/settings._FPS) < settings._LENGTH and cutoffIndex < len(file_df):
+    while lastFrame*(1/settings._FPS) < settings._LENGTH - 1 and cutoffIndex < len(file_df):
         lastFrame = file_df.iloc[cutoffIndex]["Frame Number"]
         cutoffIndex += 1
-    file_df = file_df.drop(list(range(cutoffIndex, len(file_df))))
+    file_df = file_df.drop(list(range(cutoffIndex -1, len(file_df))))
     return file_df
 
 # note: that depending on weather or not the spike train is binary or base on intesity the values in "spikeTrain" can be either 1/0 or double/0
@@ -74,6 +76,7 @@ class Settings:
     _SETTINGS_FILE      = None  # file path to seetings; settings should define the high and low thresholds for classes (see settings argument for more details)
     _LENGTH             = None  # number of seconds to use for training (events after this time will not be included in the spike trains)
     _FPS                = None  # frames per second 
+    _EVENTS_PER_SEC     = None  # number of events per second of experment 
 
     def __new__(cls):
             if not hasattr(cls, 'instance'):
