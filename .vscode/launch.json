@@ -30,5 +30,15 @@
             "args" : ["./Prepocessing/data/test", "./Prepocessing/data/test/output", "--binary", "--settings", "Prepocessing/settings3mm.csv"],
             "justMyCode": true
         }
+        ,
+        {
+            "name": "Python: SNN model",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/ssnModel.py",
+            "console": "integratedTerminal",
+            "args" : [],
+            "justMyCode": true
+        }
     ]
 }
