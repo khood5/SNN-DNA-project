@@ -41,28 +41,32 @@ def wrtieSpikeTrainToFile(spikeTrain: list, SpikeTrainFilename: str, sourceFilen
         write = csv.writer(outFile)
         for spike in spikeTrain : write.writerow ([spike])
     totalNumberOfEvents = len(pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,sourceFilename),header=None,names=["Frame Number", "Intesity"]))
-    indexes.append([SpikeTrainFilename,getClassOfSpikeTrain(totalNumberOfEvents)])
+    
+    spikeTrainClass = getClassOfSpikeTrain(totalNumberOfEvents)
+    indexes.append([SpikeTrainFilename,spikeTrainClass])
 
 
 def getClassOfSpikeTrain(spikeCount: int):
     settings = Settings()
+    
     if settings._SETTINGS_FILE == None:
         return spikeCount
     
     high = -1
     low = -1
-    with open(settings._SETTINGS_FILE, newline='') as settings:
-        thresholdReader = csv.reader(settings, delimiter=',')
+    with open(settings._SETTINGS_FILE, newline='') as thresholdSettings:
+        thresholdReader = csv.reader(thresholdSettings, delimiter=',')
         for row in thresholdReader:
             if row[0].lower().strip() == "high":
                 high = int(row[1])
             elif row[0].lower().strip() == "low":
                 low = int(row[1])
+    
     if spikeCount >= high:
-        return "high"
+        return settings._HIGH_CLASS_CODE
     if spikeCount <= low:
-        return "low"
-    return "medium"
+        return settings._LOW_CLASS_CODE
+    return settings._MEDIUM_CLASS_CODE
         
 
 class Settings:
@@ -73,6 +77,10 @@ class Settings:
     _LENGTH             = None  # number of seconds to use for training (events after this time will not be included in the spike trains)
     _FPS                = None  # frames per second 
     _EVENTS_PER_SEC     = None  # number of events per second of experment 
+    _HIGH_CLASS_CODE    = None  # High class numerical value
+    _MEDIUM_CLASS_CODE  = None  # Medium class numerical value
+    _LOW_CLASS_CODE     = None  # Low class numerical value
+
 
     def __new__(cls):
             if not hasattr(cls, 'instance'):
@@ -80,7 +88,13 @@ class Settings:
             return cls.instance 
     def save_settings(self):
                 dt_string = datetime.now().strftime("%d.%m.%Y_%H-%M-%S-%f")
-                f = open(f"./preprocess_{dt_string}_saved_args.csv", "w+")
+                try:
+                    f = open(f"./Prepocessing/preprocess_logs/preprocess_{dt_string}_saved_args.csv", "w+")
+                except FileNotFoundError as e: 
+                    print("!!! Missing 'preprocess_logs' directory\n writing logs to this directory")
+                finally:
+                    f = open(f"./preprocess_{dt_string}_saved_args.csv", "w+")
+            
                 f.write("_INPUT_DIRECTORY,_OUTPUT_DIRECTORY,_BINARY,_SETTINGS_FILE,_LENGTH,_FPS\n")
                 f.write(f"{self._INPUT_DIRECTORY},{self._OUTPUT_DIRECTORY},{self._BINARY},{self._SETTINGS_FILE},{self._LENGTH},{self._FPS}\n")
                 f.write(f"run at {dt_string}")
@@ -90,6 +104,10 @@ if __name__ == "__main__":
     DEFAULT_FPS = 20
     DEFAULT_LENGTH = 5 * 60
     INDEX_FILE_NAME = "index.csv"
+    HIGH_CLASS_CODE = 2
+    MEDIUM_CLASS_CODE = 1
+    LOW_CLASS_CODE = 0
+    
     parser = argparse.ArgumentParser(description='''Process Single-molecule experiments data to add frames with 0 reactions and convert from excel to csv. \n\
     Creates index file that has the file path of each csv file (relative to where this program runs) \n\
     and that files class. Each file is one spike train used for training. \n''', 
@@ -123,12 +141,18 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     settings = Settings()
+    ### user defined settings ###
     settings._INPUT_DIRECTORY = args.input_directory
     settings._OUTPUT_DIRECTORY = args.output_directory
     settings._BINARY = args.binary
     settings._SETTINGS_FILE = args.settings
     settings._LENGTH = args.length
     settings._FPS = args.frams_per_second
+    ### Fixed settings ###
+    settings._HIGH_CLASS_CODE = HIGH_CLASS_CODE
+    settings._MEDIUM_CLASS_CODE = MEDIUM_CLASS_CODE
+    settings._LOW_CLASS_CODE = LOW_CLASS_CODE
+    
     print(f"reading files from  :{Path(settings._INPUT_DIRECTORY)}")
     print(f"creating files in   :{Path(settings._OUTPUT_DIRECTORY)}")
     print(f"settings file       :{Path(settings._SETTINGS_FILE)}")
@@ -144,7 +168,7 @@ if __name__ == "__main__":
         wrtieSpikeTrainToFile(spikeTrain, f"spikeTrain_{fileNameNumber}.csv", f, indexes)
         fileNameNumber += 1
     outputIndexFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",INDEX_FILE_NAME)
-    with open(INDEX_FILE_NAME, 'w+', newline='') as outFile:
+    with open(outputIndexFile, 'w+', newline='') as outFile:
         write = csv.writer(outFile)
         write.writerows(indexes)
     
