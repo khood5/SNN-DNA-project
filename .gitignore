@@ -21,6 +21,8 @@
 **/*.xlw 
 **/*.xlr
 
+!Documents/**/*
+
 !settings2-1.5mm.csv
 !settings3mm.csv
 !settings9-5mm.csv
