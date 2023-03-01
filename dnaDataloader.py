@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+from copy import deepcopy
 
 class expermentDataloader:
     def __init__(
@@ -19,7 +20,8 @@ class expermentDataloader:
         CSVlines = pd.read_csv(self.spikeTrains[index]).to_numpy()
         eventClass = self.expermentClasses[index]
         events = np.zeros(len(CSVlines), dtype=int)
-        return events, eventClass
+        
+        return deepcopy((events, eventClass))
 
     def __len__(self):
-        return len(self.expermentSikeTrainsIndex)
+        return deepcopy(len(self.expermentSikeTrainsIndex))
