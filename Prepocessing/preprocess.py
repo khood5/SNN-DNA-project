@@ -92,7 +92,6 @@ class Settings:
                     f = open(f"./Prepocessing/preprocess_logs/preprocess_{dt_string}_saved_args.csv", "w+")
                 except FileNotFoundError as e: 
                     print("!!! Missing 'preprocess_logs' directory\n writing logs to this directory")
-                finally:
                     f = open(f"./preprocess_{dt_string}_saved_args.csv", "w+")
             
                 f.write("_INPUT_DIRECTORY,_OUTPUT_DIRECTORY,_BINARY,_SETTINGS_FILE,_LENGTH,_FPS\n")

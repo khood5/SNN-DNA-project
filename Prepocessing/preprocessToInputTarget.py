@@ -6,12 +6,15 @@ from datetime import datetime
 import os
 import csv
 import copy
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def convertExcelToSpikeTrain(file: str):
     settings = Settings()
     file_df = pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,file),header=None,names=["Frame Number", "Intesity"])
     targetDf = copy.deepcopy(file_df)
     inputDf = shorten(file_df)
+    inputDf = replay(inputDf,len(targetDf))
     
     min = float(targetDf[:]["Intesity"].min()) # max/min need to be the same for both target and input
     max = float(targetDf[:]["Intesity"].max())
@@ -20,14 +23,18 @@ def convertExcelToSpikeTrain(file: str):
     for l in range(0,len(inputDf)):
         currentSpikeEvent = 0 
         if settings._BINARY != True:
-            currentSpikeEvent = (float(file_df.iloc[l]["Intesity"]) - min)/(max-min)
-        input.append([currentSpikeEvent,(inputDf.iloc[l]["Frame Number"]/settings._FPS)])
+            currentSpikeEvent = (float(file_df.iloc[l]["Intesity"]) - min)/(max-min) * settings._Y_SCALE
+            currentSpikeEvent = int(currentSpikeEvent)
+        for i in range(currentSpikeEvent):
+            input.append([i,(inputDf.iloc[l]["Frame Number"]/settings._FPS)])
     target = []
     for l in range(0,len(targetDf)):
         currentSpikeEvent = 0 
         if settings._BINARY != True:
-            currentSpikeEvent = (float(file_df.iloc[l]["Intesity"]) - min)/(max-min)
-        target.append([currentSpikeEvent,(targetDf.iloc[l]["Frame Number"]/settings._FPS)])
+            currentSpikeEvent = (float(file_df.iloc[l]["Intesity"]) - min)/(max-min) * settings._Y_SCALE
+            currentSpikeEvent = int(currentSpikeEvent)
+        for i in range(currentSpikeEvent):
+            target.append([i,(targetDf.iloc[l]["Frame Number"]/settings._FPS)])
         
     return (input, target)
 
@@ -39,6 +46,21 @@ def shorten(file_df: pd.DataFrame):
         lastFrame = file_df.iloc[cutoffIndex]["Frame Number"]
         cutoffIndex += 1
     file_df = file_df.drop(list(range(cutoffIndex -1, len(file_df))))
+    return file_df
+
+def replay(file_df: pd.DataFrame, targetLength: int):
+    og = copy.deepcopy(file_df)
+    rewindAt = len(file_df[:]["Frame Number"])-1
+    max = int(file_df[:]["Frame Number"].max())
+    i = 0
+    while len(file_df) < targetLength:
+        newRow = {"Intesity": file_df.iloc[i]["Intesity"],"Frame Number":(file_df.iloc[i]["Frame Number"]+max)}
+        file_df = file_df.append(newRow, ignore_index=True)
+        if i < rewindAt:
+            i += 1
+        else:
+            max = int(file_df[:]["Frame Number"].max())
+            i = 0
     return file_df
 
 # note: that depending on weather or not the spike train is binary or base on intesity the values in "spikeTrain" can be either 1/0 or double/0
@@ -63,6 +85,7 @@ class Settings:
     _HIGH_CLASS_CODE    = None  # High class numerical value
     _MEDIUM_CLASS_CODE  = None  # Medium class numerical value
     _LOW_CLASS_CODE     = None  # Low class numerical value
+    _Y_SCALE            = None  # Y scale for non-binary event conversion
 
 
     def __new__(cls):
@@ -75,7 +98,6 @@ class Settings:
                     f = open(f"./preprocess_logs/preprocess_{dt_string}_saved_args.csv", "w+")
                 except FileNotFoundError as e: 
                     print("!!! Missing 'preprocess_logs' directory\n writing logs to this directory")
-                finally:
                     f = open(f"./preprocess_{dt_string}_saved_args.csv", "w+")
             
                 f.write("_INPUT_DIRECTORY,_OUTPUT_DIRECTORY,_BINARY,_SETTINGS_FILE,_LENGTH,_FPS\n")
@@ -90,7 +112,7 @@ if __name__ == "__main__":
     HIGH_CLASS_CODE = 2
     MEDIUM_CLASS_CODE = 1
     LOW_CLASS_CODE = 0
-    
+    Y_SCALE = 200
     parser = argparse.ArgumentParser(description='''Process Single-molecule experiments data to add frames with 0 reactions and convert from excel to csv. \n\
     Creates index file that has the file path of each csv file (relative to where this program runs) \n\
     and that files class. Each file is one spike train used for training. \n''', 
@@ -120,6 +142,10 @@ if __name__ == "__main__":
                         DEFAULT: {}'''.format(DEFAULT_FPS), 
                         type=int,
                         default=DEFAULT_FPS)
+    parser.add_argument('-y','--y_scale', help='''if non-binary events then this is the scale that the y value will be between (0-y_scale) \n \
+                        DEFAULT: {}'''.format(Y_SCALE), 
+                        type=int,
+                        default=Y_SCALE)
 
 
     args = parser.parse_args()
@@ -131,6 +157,7 @@ if __name__ == "__main__":
     settings._SETTINGS_FILE = args.settings
     settings._LENGTH = args.length
     settings._FPS = args.frams_per_second
+    settings._Y_SCALE = args.y_scale
     ### Fixed settings ###
     settings._HIGH_CLASS_CODE = HIGH_CLASS_CODE
     settings._MEDIUM_CLASS_CODE = MEDIUM_CLASS_CODE

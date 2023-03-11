@@ -43,9 +43,9 @@
             "name": "Python: SNN model",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/ssnModel.py",
+            "program": "${workspaceFolder}/snnModel.py",
             "console": "integratedTerminal",
-            "args" : [],
+            "args" : ["./Prepocessing/data/spikeTrainsInputTarget/5-SpikeTrains", "./Prepocessing/data/spikeTrainsInputTarget/5-SpikeTrains/index.csv", "-e", "3"],
             "justMyCode": true
         }
     ]
