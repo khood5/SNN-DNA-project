@@ -29,8 +29,16 @@
             "console": "integratedTerminal",
             "args" : ["./Prepocessing/data/test", "./Prepocessing/data/test/output", "--binary", "--settings", "Prepocessing/settings3mm.csv"],
             "justMyCode": true
-        }
-        ,
+        },
+        {
+            "name": "Python: preprocess to input target with data/3mm_9.24pN",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/Prepocessing/preprocessToInputTarget.py",
+            "console": "integratedTerminal",
+            "args" : ["./Prepocessing/data/test", "./Prepocessing/data/test/output", "--settings", "Prepocessing/settings3mm.csv"],
+            "justMyCode": true
+        },
         {
             "name": "Python: SNN model",
             "type": "python",

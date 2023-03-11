@@ -5,28 +5,37 @@ from argparse import RawTextHelpFormatter
 from datetime import datetime
 import os
 import csv
+import copy
 
 def convertExcelToSpikeTrain(file: str):
     settings = Settings()
     file_df = pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,file),header=None,names=["Frame Number", "Intesity"])
-    file_df = shorten(file_df)
-    frames = []
-    lastFrameNumber = 0
-    for l in range(0,len(file_df)):
-        numberOfMissingFrames = int(file_df.iloc[l]["Frame Number"]) - lastFrameNumber - 1 # -1 becouse two frames right after each other are 1 frame apart
-        lastFrameNumber = int(file_df.iloc[l]["Frame Number"])
-        arrayOfZeros = numberOfMissingFrames * [0]
-        currentSpikeEvent = [1] if settings._BINARY == True else [file_df.iloc[l]["Intesity"]] 
-        frames += arrayOfZeros + currentSpikeEvent # missing frame are 0s plus the current frame
-    missingEventsFromEndOfExperment = int((settings._LENGTH * settings._FPS) - len(frames))
-    frames += [0] * missingEventsFromEndOfExperment
-    return frames
+    targetDf = copy.deepcopy(file_df)
+    inputDf = shorten(file_df)
+    
+    min = float(targetDf[:]["Intesity"].min()) # max/min need to be the same for both target and input
+    max = float(targetDf[:]["Intesity"].max())
+    
+    input = []
+    for l in range(0,len(inputDf)):
+        currentSpikeEvent = 0 
+        if settings._BINARY != True:
+            currentSpikeEvent = (float(file_df.iloc[l]["Intesity"]) - min)/(max-min)
+        input.append([currentSpikeEvent,(inputDf.iloc[l]["Frame Number"]/settings._FPS)])
+    target = []
+    for l in range(0,len(targetDf)):
+        currentSpikeEvent = 0 
+        if settings._BINARY != True:
+            currentSpikeEvent = (float(file_df.iloc[l]["Intesity"]) - min)/(max-min)
+        target.append([currentSpikeEvent,(targetDf.iloc[l]["Frame Number"]/settings._FPS)])
+        
+    return (input, target)
 
 def shorten(file_df: pd.DataFrame):
     settings = Settings()
     cutoffIndex = 1
     lastFrame = file_df.iloc[0]["Frame Number"]
-    while (lastFrame/settings._FPS) < settings._LENGTH - 1 and cutoffIndex < len(file_df):
+    while lastFrame*(1/settings._FPS) < settings._LENGTH - 1 and cutoffIndex < len(file_df):
         lastFrame = file_df.iloc[cutoffIndex]["Frame Number"]
         cutoffIndex += 1
     file_df = file_df.drop(list(range(cutoffIndex -1, len(file_df))))
@@ -34,39 +43,13 @@ def shorten(file_df: pd.DataFrame):
 
 # note: that depending on weather or not the spike train is binary or base on intesity the values in "spikeTrain" can be either 1/0 or double/0
 # see binary argument for more details
-def wrtieSpikeTrainToFile(spikeTrain: list, SpikeTrainFilename: str, sourceFilename: str, indexes: list):
+def wrtieSpikeTrainToFile(spikeTrain: list, SpikeTrainFilename: str):
     settings = Settings()
+    
     outputSpikeTrainFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",SpikeTrainFilename)
     with open(outputSpikeTrainFile, 'w+', newline='') as outFile:
         write = csv.writer(outFile)
-        for spike in spikeTrain : write.writerow ([spike])
-    totalNumberOfEvents = len(pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,sourceFilename),header=None,names=["Frame Number", "Intesity"]))
-    
-    spikeTrainClass = getClassOfSpikeTrain(totalNumberOfEvents)
-    indexes.append([SpikeTrainFilename,spikeTrainClass])
-
-
-def getClassOfSpikeTrain(spikeCount: int):
-    settings = Settings()
-    
-    if settings._SETTINGS_FILE == None:
-        return spikeCount
-    
-    high = -1
-    low = -1
-    with open(settings._SETTINGS_FILE, newline='') as thresholdSettings:
-        thresholdReader = csv.reader(thresholdSettings, delimiter=',')
-        for row in thresholdReader:
-            if row[0].lower().strip() == "high":
-                high = int(row[1])
-            elif row[0].lower().strip() == "low":
-                low = int(row[1])
-    
-    if spikeCount >= high:
-        return settings._HIGH_CLASS_CODE
-    if spikeCount <= low:
-        return settings._LOW_CLASS_CODE
-    return settings._MEDIUM_CLASS_CODE
+        for spike in spikeTrain : write.writerow (spike)
         
 
 class Settings:
@@ -89,7 +72,7 @@ class Settings:
     def save_settings(self):
                 dt_string = datetime.now().strftime("%d.%m.%Y_%H-%M-%S-%f")
                 try:
-                    f = open(f"./Prepocessing/preprocess_logs/preprocess_{dt_string}_saved_args.csv", "w+")
+                    f = open(f"./preprocess_logs/preprocess_{dt_string}_saved_args.csv", "w+")
                 except FileNotFoundError as e: 
                     print("!!! Missing 'preprocess_logs' directory\n writing logs to this directory")
                 finally:
@@ -164,8 +147,14 @@ if __name__ == "__main__":
         supported_file_types = ["xls", "xlsx", "xlsm", "xlsb", "xlt", "xls", "xml", "xlw", "xlr"]
         if f.split(".")[-1] not in supported_file_types:
             continue # skip none excel files
-        spikeTrain = convertExcelToSpikeTrain(f)
-        wrtieSpikeTrainToFile(spikeTrain, f"spikeTrain_{fileNameNumber}.csv", f, indexes)
+        input, target = convertExcelToSpikeTrain(f)
+        
+        SpikeTrainFilename = f"spikeTrain_{fileNameNumber}.csv"
+        targetSpikeTrainFilename = f"spikeTrain_{fileNameNumber}_target.csv"
+        
+        wrtieSpikeTrainToFile(input, SpikeTrainFilename)
+        wrtieSpikeTrainToFile(target, targetSpikeTrainFilename)
+        indexes.append([SpikeTrainFilename,targetSpikeTrainFilename])
         fileNameNumber += 1
     outputIndexFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",INDEX_FILE_NAME)
     with open(outputIndexFile, 'w+', newline='') as outFile:
