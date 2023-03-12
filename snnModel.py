@@ -16,7 +16,7 @@ class Network(torch.nn.Module):
         super(Network, self).__init__()
 
         neuron_params = {
-                'threshold'     : 0.1,
+                'threshold'     : 0.2,
                 'current_decay' : 1,
                 'voltage_decay' : 0.1,
                 'requires_grad' : True,     
@@ -25,7 +25,7 @@ class Network(torch.nn.Module):
         self.blocks = torch.nn.ModuleList([
                 slayer.block.cuba.Dense(neuron_params, 200, 256),
                 slayer.block.cuba.Dense(neuron_params, 256, 200),
-            ])
+                ])
 
     def forward(self, spike):
         for block in self.blocks:
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         for i, (input, target) in enumerate(train_loader): # training loop
             output = assistant.train(input, target)
             print(f'\r[Epoch {epoch:3d}/{settings._EPOCHS}] {stats}', end='')
-        
+
         if stats.training.best_loss:
             torch.save(net.state_dict(), trained_folder + '/network.pt')
         stats.update()
