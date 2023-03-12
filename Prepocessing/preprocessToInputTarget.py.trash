@@ -13,9 +13,8 @@ def convertExcelToSpikeTrain(file: str):
     settings = Settings()
     file_df = pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,file),header=None,names=["Frame Number", "Intesity"])
     targetDf = copy.deepcopy(file_df)
-    inputDf = shorten(copy.deepcopy(file_df), settings._LENGTH)
-    inputDf = replay(copy.deepcopy(inputDf),targetDf[:]["Frame Number"].max())
-    # inputDf = shorten(copy.deepcopy(inputDf), targetDf[:]["Frame Number"].max())
+    inputDf = shorten(file_df)
+    inputDf = replay(inputDf,len(targetDf))
     
     min = float(targetDf[:]["Intesity"].min()) # max/min need to be the same for both target and input
     max = float(targetDf[:]["Intesity"].max())
@@ -24,7 +23,7 @@ def convertExcelToSpikeTrain(file: str):
     for l in range(0,len(inputDf)):
         currentSpikeEvent = 0 
         if settings._BINARY != True:
-            currentSpikeEvent = (float(inputDf.iloc[l]["Intesity"]) - min)/(max-min) * settings._Y_SCALE
+            currentSpikeEvent = (float(file_df.iloc[l]["Intesity"]) - min)/(max-min) * settings._Y_SCALE
             currentSpikeEvent = int(currentSpikeEvent)
         for i in range(currentSpikeEvent):
             input.append([i,(inputDf.iloc[l]["Frame Number"]/settings._FPS)])
@@ -39,41 +38,30 @@ def convertExcelToSpikeTrain(file: str):
         
     return (input, target)
 
-def shorten(file_df: pd.DataFrame, length: int):
+def shorten(file_df: pd.DataFrame):
     settings = Settings()
     cutoffIndex = 1
     lastFrame = file_df.iloc[0]["Frame Number"]
-    while lastFrame*(1/settings._FPS) < length - 1 and cutoffIndex < len(file_df):
+    while lastFrame*(1/settings._FPS) < settings._LENGTH - 1 and cutoffIndex < len(file_df):
         lastFrame = file_df.iloc[cutoffIndex]["Frame Number"]
         cutoffIndex += 1
     file_df = file_df.drop(list(range(cutoffIndex -1, len(file_df))))
     return file_df
 
 def replay(file_df: pd.DataFrame, targetLength: int):
-    replayedCopy = file_df.copy(deep=True)
+    og = copy.deepcopy(file_df)
+    rewindAt = len(file_df[:]["Frame Number"])-1
     max = int(file_df[:]["Frame Number"].max())
-    while max < targetLength:
-        file_df["Frame Number"] = file_df["Frame Number"] + max
-        replayedCopy = pd.concat([replayedCopy,file_df], ignore_index=True, axis=0)
-        max = int(file_df[:]["Frame Number"].max())
-    return replayedCopy
-
-# def replay(file_df: pd.DataFrame, targetLength: int):
-#     og = copy.deepcopy(file_df)
-#     rewindAt = len(file_df[:]["Frame Number"])-1
-#     max = int(file_df[:]["Frame Number"].max())
-#     i = 0
-#     while file_df.iloc[-1]["Frame Number"]+max < targetLength:
-#         newRow = {"Intesity": file_df.iloc[i]["Intesity"],"Frame Number":(file_df.iloc[i]["Frame Number"]+max)}
-#         file_df = file_df.append(newRow, ignore_index=True)
-#         if i < rewindAt:
-#             i += 1
-#         else:
-#             max = int(file_df[:]["Frame Number"].max())
-#             i = 0
-#     newRow = {"Intesity": float(file_df[:]["Intesity"].min()),"Frame Number":targetLength}
-#     file_df = file_df.append(newRow, ignore_index=True)
-#     return file_df
+    i = 0
+    while len(file_df) < targetLength:
+        newRow = {"Intesity": file_df.iloc[i]["Intesity"],"Frame Number":(file_df.iloc[i]["Frame Number"]+max)}
+        file_df = file_df.append(newRow, ignore_index=True)
+        if i < rewindAt:
+            i += 1
+        else:
+            max = int(file_df[:]["Frame Number"].max())
+            i = 0
+    return file_df
 
 # note: that depending on weather or not the spike train is binary or base on intesity the values in "spikeTrain" can be either 1/0 or double/0
 # see binary argument for more details

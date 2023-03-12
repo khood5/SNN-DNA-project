@@ -87,7 +87,7 @@ if __name__ == "__main__":
     trainingData = dna.expermentDataloader(settings._INPUT_INDEX,settings._INPUT_DIRECTORY)
     train_loader = DataLoader(dataset=trainingData, batch_size=3)
 
-    trained_folder = 'Trained'
+    trained_folder = 'Training_model'
     os.makedirs(trained_folder, exist_ok=True)
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
