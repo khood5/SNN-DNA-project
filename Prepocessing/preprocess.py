@@ -22,7 +22,7 @@ def convertExcelToSpikeTrain(file: str):
     
     missingEventsFromEndOfExperment = 0 if settings._NUM_CLASS else int((settings._LENGTH * settings._FPS) - len(frames))
     frames += [0] * missingEventsFromEndOfExperment
-    return frames
+    return [frames, list(file_df.iloc[:]["Frame Number"])]
 
 def shorten(file_df: pd.DataFrame):
     settings = Settings()
@@ -41,7 +41,7 @@ def wrtieSpikeTrainToFile(spikeTrain: list, SpikeTrainFilename: str, sourceFilen
     outputSpikeTrainFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",SpikeTrainFilename)
     with open(outputSpikeTrainFile, 'w+', newline='') as outFile:
         write = csv.writer(outFile)
-        for spike in spikeTrain : write.writerow ([spike])
+        for i in range(len(spikeTrain[0])) : write.writerow ([spikeTrain[0][i],spikeTrain[1][i]])
     totalNumberOfEvents = len(pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,sourceFilename),header=None,names=["Frame Number", "Intesity"]))
     
     spikeTrainClass = getClassOfSpikeTrain(totalNumberOfEvents)
