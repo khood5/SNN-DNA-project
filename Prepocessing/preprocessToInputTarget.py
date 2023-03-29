@@ -7,6 +7,7 @@ import os
 import csv
 import copy
 import warnings
+import hashlib
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def convertExcelToSpikeTrain(file: str):
@@ -14,29 +15,32 @@ def convertExcelToSpikeTrain(file: str):
     file_df = pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,file),header=None,names=["Frame Number", "Intesity"])
     targetDf = copy.deepcopy(file_df)
     inputDf = shorten(copy.deepcopy(file_df), settings._LENGTH)
-    inputDf = replay(copy.deepcopy(inputDf),targetDf[:]["Frame Number"].max())
-    # inputDf = shorten(copy.deepcopy(inputDf), targetDf[:]["Frame Number"].max())
+    if(settings._REPLAY):
+        inputDf = replay(copy.deepcopy(inputDf),targetDf[:]["Frame Number"].max())
     
     min = float(targetDf[:]["Intesity"].min()) # max/min need to be the same for both target and input
     max = float(targetDf[:]["Intesity"].max())
     
     input = []
     for l in range(0,len(inputDf)):
-        currentSpikeEvent = 0 
+        currentSpikeEvent = 1 
         if settings._BINARY != True:
             currentSpikeEvent = (float(inputDf.iloc[l]["Intesity"]) - min)/(max-min) * settings._Y_SCALE
             currentSpikeEvent = int(currentSpikeEvent)
-        for i in range(currentSpikeEvent):
-            input.append([i,(inputDf.iloc[l]["Frame Number"]/settings._FPS)])
+            for i in range(currentSpikeEvent):
+                input.append([i,(inputDf.iloc[l]["Frame Number"]/settings._FPS)])
+        else:
+             input.append([currentSpikeEvent,(inputDf.iloc[l]["Frame Number"]/settings._FPS)])
     target = []
     for l in range(0,len(targetDf)):
-        currentSpikeEvent = 0 
+        currentSpikeEvent = 1 
         if settings._BINARY != True:
-            currentSpikeEvent = (float(file_df.iloc[l]["Intesity"]) - min)/(max-min) * settings._Y_SCALE
+            currentSpikeEvent = (float(targetDf.iloc[l]["Intesity"]) - min)/(max-min) * settings._Y_SCALE
             currentSpikeEvent = int(currentSpikeEvent)
-        for i in range(currentSpikeEvent):
-            target.append([i,(targetDf.iloc[l]["Frame Number"]/settings._FPS)])
-        
+            for i in range(currentSpikeEvent):
+                target.append([i,(targetDf.iloc[l]["Frame Number"]/settings._FPS)])
+        else:
+             target.append([currentSpikeEvent,(targetDf.iloc[l]["Frame Number"]/settings._FPS)])
     return (input, target)
 
 def shorten(file_df: pd.DataFrame, length: int):
@@ -57,23 +61,6 @@ def replay(file_df: pd.DataFrame, targetLength: int):
         replayedCopy = pd.concat([replayedCopy,file_df], ignore_index=True, axis=0)
         max = int(file_df[:]["Frame Number"].max())
     return replayedCopy
-
-# def replay(file_df: pd.DataFrame, targetLength: int):
-#     og = copy.deepcopy(file_df)
-#     rewindAt = len(file_df[:]["Frame Number"])-1
-#     max = int(file_df[:]["Frame Number"].max())
-#     i = 0
-#     while file_df.iloc[-1]["Frame Number"]+max < targetLength:
-#         newRow = {"Intesity": file_df.iloc[i]["Intesity"],"Frame Number":(file_df.iloc[i]["Frame Number"]+max)}
-#         file_df = file_df.append(newRow, ignore_index=True)
-#         if i < rewindAt:
-#             i += 1
-#         else:
-#             max = int(file_df[:]["Frame Number"].max())
-#             i = 0
-#     newRow = {"Intesity": float(file_df[:]["Intesity"].min()),"Frame Number":targetLength}
-#     file_df = file_df.append(newRow, ignore_index=True)
-#     return file_df
 
 # note: that depending on weather or not the spike train is binary or base on intesity the values in "spikeTrain" can be either 1/0 or double/0
 # see binary argument for more details
@@ -98,7 +85,7 @@ class Settings:
     _MEDIUM_CLASS_CODE  = None  # Medium class numerical value
     _LOW_CLASS_CODE     = None  # Low class numerical value
     _Y_SCALE            = None  # Y scale for non-binary event conversion
-
+    _REPLAY             = None  # Controls weather shorten spiketrain is repeated to match the length of the original 
 
     def __new__(cls):
             if not hasattr(cls, 'instance'):
@@ -135,6 +122,8 @@ if __name__ == "__main__":
                         type=str)
     parser.add_argument('-b','--binary', help="switches to binary spikes events default is spikes events based on reaction intesity (floating point value)\n", 
                         action=argparse.BooleanOptionalAction)
+    parser.add_argument('-r','--replay', help="switchs to repeating the input spike train to match the target length\n", 
+                        action=argparse.BooleanOptionalAction)
     parser.add_argument('-s','--settings', help='''Settings file: classes are based on the sum of total events, thier intesity is not considerd when counting events \n\
     high: number of recoreded events to be considerd in the high class \n\
     low:  number of recoreded events to be considerd in the low class \n\
@@ -166,6 +155,7 @@ if __name__ == "__main__":
     settings._INPUT_DIRECTORY = args.input_directory
     settings._OUTPUT_DIRECTORY = args.output_directory
     settings._BINARY = args.binary
+    settings._REPLAY = args.replay
     settings._SETTINGS_FILE = args.settings
     settings._LENGTH = args.length
     settings._FPS = args.frams_per_second
@@ -190,6 +180,11 @@ if __name__ == "__main__":
         
         SpikeTrainFilename = f"spikeTrain_{fileNameNumber}.csv"
         targetSpikeTrainFilename = f"spikeTrain_{fileNameNumber}_target.csv"
+        h = hashlib.sha256()
+        h.update(SpikeTrainFilename.encode('utf-8'))
+        SpikeTrainFilename = h.hexdigest()
+        h.update(targetSpikeTrainFilename.encode('utf-8'))
+        targetSpikeTrainFilename = h.hexdigest()
         
         wrtieSpikeTrainToFile(input, SpikeTrainFilename)
         wrtieSpikeTrainToFile(target, targetSpikeTrainFilename)

@@ -5,6 +5,7 @@ from argparse import RawTextHelpFormatter
 from datetime import datetime
 import os
 import csv
+import hashlib
 
 def convertExcelToSpikeTrain(file: str):
     settings = Settings()
@@ -15,10 +16,11 @@ def convertExcelToSpikeTrain(file: str):
     for l in range(0,len(file_df)):
         numberOfMissingFrames = int(file_df.iloc[l]["Frame Number"]) - lastFrameNumber - 1 # -1 becouse two frames right after each other are 1 frame apart
         lastFrameNumber = int(file_df.iloc[l]["Frame Number"])
-        arrayOfZeros = numberOfMissingFrames * [0]
+        arrayOfZeros = [] if settings._NUM_CLASS else numberOfMissingFrames * [0]
         currentSpikeEvent = [1] if settings._BINARY == True else [file_df.iloc[l]["Intesity"]] 
         frames += arrayOfZeros + currentSpikeEvent # missing frame are 0s plus the current frame
-    missingEventsFromEndOfExperment = int((settings._LENGTH * settings._FPS) - len(frames))
+    
+    missingEventsFromEndOfExperment = 0 if settings._NUM_CLASS else int((settings._LENGTH * settings._FPS) - len(frames))
     frames += [0] * missingEventsFromEndOfExperment
     return frames
 
@@ -80,6 +82,7 @@ class Settings:
     _HIGH_CLASS_CODE    = None  # High class numerical value
     _MEDIUM_CLASS_CODE  = None  # Medium class numerical value
     _LOW_CLASS_CODE     = None  # Low class numerical value
+    _NUM_CLASS          = None  # if true the acutal count is used for the class (i.e. 108 instead of high)
 
 
     def __new__(cls):
@@ -117,6 +120,8 @@ if __name__ == "__main__":
                         type=str)
     parser.add_argument('-b','--binary', help="switches to binary spikes events default is spikes events based on reaction intesity (floating point value)\n", 
                         action=argparse.BooleanOptionalAction)
+    parser.add_argument('-n','--num_class', help="the acutal count is used for the class (i.e. 108 instead of high)\n", 
+                        action=argparse.BooleanOptionalAction)
     parser.add_argument('-s','--settings', help='''Settings file: classes are based on the sum of total events, thier intesity is not considerd when counting events \n\
     high: number of recoreded events to be considerd in the high class \n\
     low:  number of recoreded events to be considerd in the low class \n\
@@ -144,6 +149,7 @@ if __name__ == "__main__":
     settings._INPUT_DIRECTORY = args.input_directory
     settings._OUTPUT_DIRECTORY = args.output_directory
     settings._BINARY = args.binary
+    settings._NUM_CLASS = args.num_class
     settings._SETTINGS_FILE = args.settings
     settings._LENGTH = args.length
     settings._FPS = args.frams_per_second
@@ -154,20 +160,23 @@ if __name__ == "__main__":
     
     print(f"reading files from  :{Path(settings._INPUT_DIRECTORY)}")
     print(f"creating files in   :{Path(settings._OUTPUT_DIRECTORY)}")
-    print(f"settings file       :{Path(settings._SETTINGS_FILE)}")
+    if settings._SETTINGS_FILE:
+        print(f"settings file       :{Path(settings._SETTINGS_FILE)}")
+    else:
+        print(f"spike count")
     
     inputFiles = os.listdir(args.input_directory)
     indexes = []
-    fileNameNumber = 1
     for f in inputFiles:
         supported_file_types = ["xls", "xlsx", "xlsm", "xlsb", "xlt", "xls", "xml", "xlw", "xlr"]
         if f.split(".")[-1] not in supported_file_types:
             continue # skip none excel files
         spikeTrain = convertExcelToSpikeTrain(f)
-        wrtieSpikeTrainToFile(spikeTrain, f"spikeTrain_{fileNameNumber}.csv", f, indexes)
-        fileNameNumber += 1
+        h = hashlib.sha256()
+        h.update(f.encode('utf-8'))
+        wrtieSpikeTrainToFile(spikeTrain, f"{h.hexdigest()}.csv", f, indexes)
     outputIndexFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",INDEX_FILE_NAME)
-    with open(outputIndexFile, 'w+', newline='') as outFile:
+    with open(outputIndexFile, 'a+', newline='') as outFile:
         write = csv.writer(outFile)
         write.writerows(indexes)
     

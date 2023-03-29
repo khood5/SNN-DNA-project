@@ -18,7 +18,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/Prepocessing/preprocess.py",
             "console": "integratedTerminal",
-            "args" : ["Prepocessing/data", ".", "--binary", "--settings", "Prepocessing/settings9-5mm.csv"],
+            "args" : ["./Prepocessing/data/test", "./Prepocessing/data/test/output", "--binary", "--settings", "Prepocessing/settings9-5mm.csv"],
             "justMyCode": true
         },
         {
@@ -27,7 +27,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/Prepocessing/preprocess.py",
             "console": "integratedTerminal",
-            "args" : ["./Prepocessing/data/test", "./Prepocessing/data/test/output", "--binary", "--settings", "Prepocessing/settings3mm.csv"],
+            "args" : ["./Prepocessing/data/test", "./Prepocessing/data/test/output", "--binary", "-n"],
             "justMyCode": true
         },
         {
@@ -36,7 +36,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/Prepocessing/preprocessToInputTarget.py",
             "console": "integratedTerminal",
-            "args" : ["./Prepocessing/data/test", "./Prepocessing/data/test/output", "--settings", "Prepocessing/settings3mm.csv"],
+            "args" : ["./Prepocessing/data/test", "./Prepocessing/data/test/output", "--settings", "Prepocessing/settings3mm.csv", "--binary"],
             "justMyCode": true
         },
         {
