@@ -181,9 +181,9 @@ if __name__ == "__main__":
         SpikeTrainFilename = f"spikeTrain_{fileNameNumber}.csv"
         targetSpikeTrainFilename = f"spikeTrain_{fileNameNumber}_target.csv"
         h = hashlib.sha256()
-        h.update(SpikeTrainFilename.encode('utf-8'))
+        h.update(SpikeTrainFilename+str(datetime.now().timestamp()).encode('utf-8'))
         SpikeTrainFilename = h.hexdigest()
-        h.update(targetSpikeTrainFilename.encode('utf-8'))
+        h.update(targetSpikeTrainFilename+str(datetime.now().timestamp()).encode('utf-8'))
         targetSpikeTrainFilename = h.hexdigest()
         
         wrtieSpikeTrainToFile(input, SpikeTrainFilename)

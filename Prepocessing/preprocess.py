@@ -16,13 +16,13 @@ def convertExcelToSpikeTrain(file: str):
     for l in range(0,len(file_df)):
         numberOfMissingFrames = int(file_df.iloc[l]["Frame Number"]) - lastFrameNumber - 1 # -1 becouse two frames right after each other are 1 frame apart
         lastFrameNumber = int(file_df.iloc[l]["Frame Number"])
-        arrayOfZeros = [] if settings._NUM_CLASS else numberOfMissingFrames * [0]
+        arrayOfZeros = numberOfMissingFrames * [0]
         currentSpikeEvent = [1] if settings._BINARY == True else [file_df.iloc[l]["Intesity"]] 
         frames += arrayOfZeros + currentSpikeEvent # missing frame are 0s plus the current frame
     
-    missingEventsFromEndOfExperment = 0 if settings._NUM_CLASS else int((settings._LENGTH * settings._FPS) - len(frames))
+    missingEventsFromEndOfExperment = int((settings._LENGTH * settings._FPS) - len(frames))
     frames += [0] * missingEventsFromEndOfExperment
-    return [frames, list(file_df.iloc[:]["Frame Number"])]
+    return frames
 
 def shorten(file_df: pd.DataFrame):
     settings = Settings()
@@ -41,7 +41,7 @@ def wrtieSpikeTrainToFile(spikeTrain: list, SpikeTrainFilename: str, sourceFilen
     outputSpikeTrainFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",SpikeTrainFilename)
     with open(outputSpikeTrainFile, 'w+', newline='') as outFile:
         write = csv.writer(outFile)
-        for i in range(len(spikeTrain[0])) : write.writerow ([spikeTrain[0][i],spikeTrain[1][i]])
+        for spike in spikeTrain : write.writerow ([spike])
     totalNumberOfEvents = len(pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,sourceFilename),header=None,names=["Frame Number", "Intesity"]))
     
     spikeTrainClass = getClassOfSpikeTrain(totalNumberOfEvents)
@@ -92,7 +92,7 @@ class Settings:
     def save_settings(self):
                 dt_string = datetime.now().strftime("%d.%m.%Y_%H-%M-%S-%f")
                 try:
-                    f = open(f"./Prepocessing/preprocess_logs/preprocess_{dt_string}_saved_args.csv", "w+")
+                    f = open(f"./preprocess_logs/preprocess_{dt_string}_saved_args.csv", "w+")
                 except FileNotFoundError as e: 
                     print("!!! Missing 'preprocess_logs' directory\n writing logs to this directory")
                     f = open(f"./preprocess_{dt_string}_saved_args.csv", "w+")
@@ -173,7 +173,7 @@ if __name__ == "__main__":
             continue # skip none excel files
         spikeTrain = convertExcelToSpikeTrain(f)
         h = hashlib.sha256()
-        h.update(f.encode('utf-8'))
+        h.update((f+str(datetime.now().timestamp())).encode('utf-8'))
         wrtieSpikeTrainToFile(spikeTrain, f"{h.hexdigest()}.csv", f, indexes)
     outputIndexFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",INDEX_FILE_NAME)
     with open(outputIndexFile, 'a+', newline='') as outFile:
