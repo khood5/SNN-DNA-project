@@ -20,6 +20,8 @@
 **/*.xml 
 **/*.xlw 
 **/*.xlr
+./Models/*
+./Models/**/*
 
 !Documents/**/*
 
