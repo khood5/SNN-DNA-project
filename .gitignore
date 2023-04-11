@@ -20,8 +20,8 @@
 **/*.xml 
 **/*.xlw 
 **/*.xlr
-./Models/*
-./Models/**/*
+Models/*
+Models/**/*
 
 !Documents/**/*
 
@@ -248,3 +248,4 @@ Temporary Items
 
 # Built Visual Studio Code Extensions
 *.vsix
+
