@@ -14,7 +14,6 @@ i=0
 find "$INPUT_DIR"/ -type f -print0 | while read -d $'\0' RAW_DATA; do
     (
         echo "Processing $RAW_DATA"
-        echo python preprocess.py "$RAW_DATA" "$OUTPUT_DIR" --length 600 --binary -n -0
         python preprocess.py "$RAW_DATA" "$OUTPUT_DIR" --length 600 --binary -n -0
     )&
     if ((i % $(($CPU_COUNT - 1)) == 0)) ;
