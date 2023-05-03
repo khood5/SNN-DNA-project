@@ -40,6 +40,15 @@
             "justMyCode": true
         },
         {
+            "name": "Python: preprocess single file",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/Prepocessing/preprocess.py",
+            "console": "integratedTerminal",
+            "args" : ["./Prepocessing/t/1800_nM_AR/1.xls", "./Prepocessing/t/allData", "--length", "600", "--binary", "-n", "-0"],
+            "justMyCode": true
+        },
+        {
             "name": "Python: SNN model",
             "type": "python",
             "request": "launch",

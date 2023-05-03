@@ -1,13 +1,36 @@
 #!/bin/bash
 # make sure you are in the right envi (should be conda activate {project name})
 
-INPUT_DIR="./data"
-OUTPUT_DIR="./data/allData"
+INPUT_DIR=$1 # "./large_dataset"
+OUTPUT_DIR="$INPUT_DIR/allData"
 # OUTPUT_DIR="./data/seperatedData"
 
 
 mkdir -p $OUTPUT_DIR
 rm -rf $OUTPUT_DIR/*
+
+CPU_COUNT=$(lscpu | grep "CPU(s):" | head -1 | rev | cut -d' ' -f 1 | rev)
+i=0
+find "$INPUT_DIR"/ -type f -print0 | while read -d $'\0' RAW_DATA; do
+    (
+        echo "Processing $RAW_DATA"
+        echo python preprocess.py "$RAW_DATA" "$OUTPUT_DIR" --length 600 --binary -n -0
+        python preprocess.py "$RAW_DATA" "$OUTPUT_DIR" --length 600 --binary -n -0
+    )&
+    if ((i % $(($CPU_COUNT - 1)) == 0)) ;
+    then
+        wait
+    fi 
+    i=$((i+1))
+done 
+wait
+
+# old data
+# python preprocess.py "$INPUT_DIR/9mm_0.002pN" "$OUTPUT_DIR" --length 600 --binary -n
+# python preprocess.py "$INPUT_DIR/5mm_1.46pN" "$OUTPUT_DIR" --length 600 --binary -n
+# python preprocess.py "$INPUT_DIR/3mm_9.24pN" "$OUTPUT_DIR" --length 600 --binary -n
+# python preprocess.py "$INPUT_DIR/2mm_22.6pN" "$OUTPUT_DIR" --length 600 --binary -n
+# python preprocess.py "$INPUT_DIR/1.5mm_35.14pN" "$OUTPUT_DIR" --length 600 --binary -n
 
 # mkdir -p $OUTPUT_DIR/high
 # mkdir -p $OUTPUT_DIR/medium
@@ -17,9 +40,3 @@ rm -rf $OUTPUT_DIR/*
 # python preprocess.py "$INPUT_DIR/3mm_9.24pN" "$OUTPUT_DIR/medium" --length 600 --binary -n
 # python preprocess.py "$INPUT_DIR/2mm_22.6pN" "$OUTPUT_DIR/low" --length 600 --binary -n
 # python preprocess.py "$INPUT_DIR/1.5mm_35.14pN" "$OUTPUT_DIR/low" --length 600 --binary -n
-
-python preprocess.py "$INPUT_DIR/9mm_0.002pN" "$OUTPUT_DIR" --length 600 --binary -n
-python preprocess.py "$INPUT_DIR/5mm_1.46pN" "$OUTPUT_DIR" --length 600 --binary -n
-python preprocess.py "$INPUT_DIR/3mm_9.24pN" "$OUTPUT_DIR" --length 600 --binary -n
-python preprocess.py "$INPUT_DIR/2mm_22.6pN" "$OUTPUT_DIR" --length 600 --binary -n
-python preprocess.py "$INPUT_DIR/1.5mm_35.14pN" "$OUTPUT_DIR" --length 600 --binary -n

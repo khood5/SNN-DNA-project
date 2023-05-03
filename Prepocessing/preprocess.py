@@ -83,7 +83,7 @@ class Settings:
     _MEDIUM_CLASS_CODE  = None  # Medium class numerical value
     _LOW_CLASS_CODE     = None  # Low class numerical value
     _NUM_CLASS          = None  # if true the acutal count is used for the class (i.e. 108 instead of high)
-
+    _SILENT             = None  # if true program should not output anything
 
     def __new__(cls):
             if not hasattr(cls, 'instance'):
@@ -141,6 +141,8 @@ if __name__ == "__main__":
                         DEFAULT: {}'''.format(DEFAULT_FPS), 
                         type=int,
                         default=DEFAULT_FPS)
+    parser.add_argument('-0','--silent', help="prevents any output\n", 
+                        action=argparse.BooleanOptionalAction)
 
 
     args = parser.parse_args()
@@ -153,19 +155,28 @@ if __name__ == "__main__":
     settings._SETTINGS_FILE = args.settings
     settings._LENGTH = args.length
     settings._FPS = args.frams_per_second
+    settings._SILENT = args.silent
     ### Fixed settings ###
     settings._HIGH_CLASS_CODE = HIGH_CLASS_CODE
     settings._MEDIUM_CLASS_CODE = MEDIUM_CLASS_CODE
     settings._LOW_CLASS_CODE = LOW_CLASS_CODE
     
-    print(f"reading files from  :{Path(settings._INPUT_DIRECTORY)}")
-    print(f"creating files in   :{Path(settings._OUTPUT_DIRECTORY)}")
-    if settings._SETTINGS_FILE:
-        print(f"settings file       :{Path(settings._SETTINGS_FILE)}")
-    else:
-        print(f"spike count")
+    if settings._SILENT != True:
+        print(f"reading files from  :{Path(settings._INPUT_DIRECTORY)}")
+        print(f"creating files in   :{Path(settings._OUTPUT_DIRECTORY)}")
+        if settings._SETTINGS_FILE:
+            print(f"settings file       :{Path(settings._SETTINGS_FILE)}")
+        else:
+            print(f"spike count")
     
-    inputFiles = os.listdir(args.input_directory)
+    if os.path.isdir(settings._INPUT_DIRECTORY):
+        inputFiles = os.listdir(settings._INPUT_DIRECTORY)
+    elif os.path.isfile(settings._INPUT_DIRECTORY):
+        inputFiles = [os.path.basename(settings._INPUT_DIRECTORY)]
+        settings._INPUT_DIRECTORY = Path(settings._INPUT_DIRECTORY).parent.absolute()
+    else:
+        print(f"ERROR: {settings._INPUT_DIRECTORY} is not a file or directory")
+        
     indexes = []
     for f in inputFiles:
         supported_file_types = ["xls", "xlsx", "xlsm", "xlsb", "xlt", "xls", "xml", "xlw", "xlr"]
@@ -179,7 +190,6 @@ if __name__ == "__main__":
     with open(outputIndexFile, 'a+', newline='') as outFile:
         write = csv.writer(outFile)
         write.writerows(indexes)
-    
     settings.save_settings()
     
         
