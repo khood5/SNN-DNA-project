@@ -1,56 +1,40 @@
 import pandas as pd
 import os
 import numpy as np
-import torch
 from torch.utils.data import Dataset
-
-# import slayer from lava-dl
-import lava.lib.dl.slayer as slayer
+import random
 
 class expermentDataloader(Dataset):
     def __init__(
         self,
         index_file: str, 
         data_path: str,
+        startIndex = 0, # default to start from begining of list
+        endIndex = None # default to grab the whole list (a.k.k arr[0:None] grabs whole thing)
     ):
-        super(expermentDataloader, self).__init__()
         self.root_dir = data_path
-        self.expermentSikeTrainsIndex = pd.read_csv(index_file) # self.landmarks_frame = pd.read_csv(csv_file)
-        self.inputs = [
-            f"{os.path.join(self.expermentSikeTrainsIndex.iloc[i, 0])}" for i in range(len(self.expermentSikeTrainsIndex)) 
+        self.expermentSikeTrainsIndex = np.array(pd.read_csv(index_file,header=None))[startIndex:endIndex]
+        self.spikeTrains = [
+            f"{os.path.join(self.expermentSikeTrainsIndex[i][0])}" for i in range(len(self.expermentSikeTrainsIndex)) 
         ]
-        self.targets = [
-            f"{os.path.join(self.expermentSikeTrainsIndex.iloc[i, 1])}" for i in range(len(self.expermentSikeTrainsIndex)) 
-        ]
-
-    def _fileToSlayerEvents(self, fileName: str):
-        CSVlines = pd.read_csv(os.path.join(self.root_dir,fileName)).to_numpy()
-        events = np.array(torch.FloatTensor(CSVlines))
-        
-        x_event = np.flip(events[:, 0])
-        y_event = None
-        c_event = torch.zeros(len(x_event), )
-        t_event = np.flip(events[:, 1])
-        return slayer.io.Event(x_event,y_event,c_event,t_event)
+        self.targets = self.expermentSikeTrainsIndex[:, 1]
 
     def __getitem__(self, index):
-        input = self._fileToSlayerEvents(self.inputs[index])
-        target = self._fileToSlayerEvents(self.targets[index])
-        
-        return (
-            input.fill_tensor(torch.zeros(1, 1, 200, 25000)).squeeze(), # input spike train
-            target.fill_tensor(torch.zeros(1, 1, 200, 25000)).squeeze() # target spike train
-        )
-        # return torch.FloatTensor(CSVlines.flatten()), int(eventClass)
-
-    def getSlayerEvents(self, index: int):
-        input = self._fileToSlayerEvents(self.inputs[index])
-        target = self._fileToSlayerEvents(self.targets[index])
-        
-        return (
-            input, # input spike train
-            target # target spike train
-        )
+        inputCSVlines = pd.read_csv(os.path.join(self.root_dir,self.spikeTrains[index]), header=None).to_numpy()
+        targetCSVLines = self.targets[index]
+        return inputCSVlines.flatten(), np.array([targetCSVLines])
 
     def __len__(self):
         return len(self.expermentSikeTrainsIndex)
+
+# takes a expermentDataset and a rhs size splits the dataset into 2 set with rhs matching the desierd size and lhs having the remmaing elements 
+def addData(lhs: list, rhs: list, expermentDataset: expermentDataloader, rhsSize=None):
+    rhsSize = int(len(expermentDataset)*0.9) if rhsSize == None else rhsSize
+    assert not rhsSize > len(expermentDataset)
+    datasetIndexes = list(range(len(expermentDataset)))
+    rhsIndexes = random.sample(datasetIndexes, k=rhsSize)
+    for i in datasetIndexes:
+        if i in rhsIndexes:
+            rhs.append(expermentDataset[i])
+        else:
+            lhs.append(expermentDataset[i])
