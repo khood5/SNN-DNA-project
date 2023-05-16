@@ -2,19 +2,19 @@
 # make sure you are in the right envi (should be conda activate {project name})
 
 INPUT_DIR=$1 # "./large_dataset"
-OUTPUT_DIR="$INPUT_DIR/allData"
+OUTPUT_DIR="$2"
 # OUTPUT_DIR="./data/seperatedData"
 
 
 mkdir -p $OUTPUT_DIR
-rm -rf $OUTPUT_DIR/*
+# rm -rf $OUTPUT_DIR/*
 
 CPU_COUNT=$(lscpu | grep "CPU(s):" | head -1 | rev | cut -d' ' -f 1 | rev)
 i=0
-find "$INPUT_DIR"/ -type f -print0 | while read -d $'\0' RAW_DATA; do
+find "$INPUT_DIR"/ -type f -name "*.xls" -print0 | while read -d $'\0' RAW_DATA; do
     (
         echo "Processing $RAW_DATA"
-        python preprocess.py "$RAW_DATA" "$OUTPUT_DIR" --length 600 --binary -n -0
+        python preprocess.py "$RAW_DATA" "$OUTPUT_DIR" --length 200 --binary -n -0
     )&
     if ((i % $(($CPU_COUNT - 1)) == 0)) ;
     then
