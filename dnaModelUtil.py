@@ -28,7 +28,7 @@ def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, 
   adam = torch.optim.Adam(model.parameters(),lr=0.000001,weight_decay=1e-5)
   losses = []
   accs = []
-  print(f"training {name}...")
+  print(f"training {name} on {device}...")
   for e in range(epochs): 
     model.train()
     for i, (inputs, targets) in enumerate(trainData):
@@ -76,7 +76,7 @@ def test(testData: DataLoader, modelPath: str, name: str, featIn: int, return_di
   model.load_state_dict(torch.load(modelPath))
   model.to(device)
   model.eval()
-  print("test...")
+  print(f"test {name} on {device}...")
   for _ in range(epochs): 
     for _, (inputs, targets) in enumerate(testData):
         inputs, targets= inputs.float().to(device), targets.float().to(device)
@@ -86,3 +86,23 @@ def test(testData: DataLoader, modelPath: str, name: str, featIn: int, return_di
         totalCorrect = torch.sum(torch.isclose(outputs.int(), targets.int(), atol=margin_of_error))
         totalCorrect = totalCorrect.clone().detach().cpu().numpy()
         return_dict[name] = {"outputPlot":outputPlot, "targetPlot": targetPlot, "acc":float(totalCorrect/len(targets))}
+
+def averageDiff(data: list):
+    diffs = []
+    while data:
+        point = data.pop()
+        for i in data:
+            diffs.append(abs(point - i))
+    return np.sum(diffs)/len(diffs)
+  
+def printStats(data: list, name=""):
+    print("+------------------")
+    if name: print(f"| name: {name}")
+    print(f"| total number of experments: {len(data)}")
+    print(f"| min: {np.min(data)}")
+    print(f"| max: {np.max(data)}")
+    print(f"| average: {np.average(data)}")
+    print(f"| median: {np.median(data)}")
+    print(f"| mode: {st.mode(data, keepdims=False)}")
+    print(f"| average difference: {averageDiff(data)}")
+    print("+------------------")
