@@ -95,14 +95,17 @@ def averageDiff(data: list):
             diffs.append(abs(point - i))
     return np.sum(diffs)/len(diffs)
   
-def printStats(data: list, name=""):
-    print("+------------------")
-    if name: print(f"| name: {name}")
+def printStats(data: list, name="", other=[]):
+    print(f"+---------- {name} ----------")
     print(f"| total number of experments: {len(data)}")
     print(f"| min: {np.min(data)}")
     print(f"| max: {np.max(data)}")
     print(f"| average: {np.average(data)}")
     print(f"| median: {np.median(data)}")
     print(f"| mode: {st.mode(data, keepdims=False)}")
+    print(f"| std: {np.std(data)}")
     print(f"| average difference: {averageDiff(data)}")
+    if other:
+      for o in other:
+        print(f"| {o}")
     print("+------------------")
