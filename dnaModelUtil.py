@@ -12,17 +12,17 @@ def calc_margin_of_error(targets: np.array):
   z = st.zscore(targets)
   return z * (σ/np.sqrt(n))
 
-def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, return_dict, epochs, margin_of_error, device=torch.device("cpu")):
+def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, return_dict, epochs, margin_of_error, device=torch.device("cpu"), capacity=700):
   model = nn.Sequential(
-            nn.Linear(featIn,700),
+            nn.Linear(featIn,capacity),
             nn.ReLU(),
             nn.Dropout(p=0.2),
-            nn.Linear(700,700),
+            nn.Linear(capacity,capacity),
             nn.ReLU(),
             nn.Dropout(p=0.2),
-            nn.Linear(700,700),
+            nn.Linear(capacity,capacity),
             nn.ReLU(),
-            nn.Linear(700,1),
+            nn.Linear(capacity,1),
           ).to(device)
   MSE = nn.MSELoss(reduction = 'sum')
   adam = torch.optim.Adam(model.parameters(),lr=0.000001,weight_decay=1e-5)
@@ -61,17 +61,17 @@ def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, 
   del model
   torch.cuda.empty_cache()
   
-def test(testData: DataLoader, modelPath: str, name: str, featIn: int, return_dict, epochs, margin_of_error, device=torch.device("cpu")):
+def test(testData: DataLoader, modelPath: str, name: str, featIn: int, return_dict, epochs, margin_of_error, device=torch.device("cpu"), capacity=700):
   model = nn.Sequential(
-            nn.Linear(featIn,700),
+            nn.Linear(featIn,capacity),
             nn.ReLU(),
             nn.Dropout(p=0.2),
-            nn.Linear(700,700),
+            nn.Linear(capacity,capacity),
             nn.ReLU(),
             nn.Dropout(p=0.2),
-            nn.Linear(700,700),
+            nn.Linear(capacity,capacity),
             nn.ReLU(),
-            nn.Linear(700,1),
+            nn.Linear(capacity,1),
           ).to(device)
   model.load_state_dict(torch.load(modelPath))
   model.to(device)
