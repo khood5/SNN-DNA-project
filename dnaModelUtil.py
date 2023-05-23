@@ -97,7 +97,7 @@ def averageDiff(data: list):
   
 def printStats(data: list, name="", other=[]):
     print(f"+---------- {name} ----------")
-    print(f"| total number of experments: {len(data)}")
+    print(f"| total number of experiments: {len(data)}")
     print(f"| min: {np.min(data)}")
     print(f"| max: {np.max(data)}")
     print(f"| average: {np.average(data)}")
