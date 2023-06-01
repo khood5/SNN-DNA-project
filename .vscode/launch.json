@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Python: Current File",
             "type": "python",
@@ -40,12 +41,12 @@
             "justMyCode": true
         },
         {
-            "name": "Python: preprocess single file",
+            "name": "Python: preprocess",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/Prepocessing/preprocess.py",
             "console": "integratedTerminal",
-            "args" : ["./Prepocessing/t/1800_nM_AR/1.xls", "./Prepocessing/t/allData", "--length", "600", "--binary", "-n", "-0"],
+            "args" : ["./Prepocessing/tmp", "./Prepocessing/tmp.out", "--length", "5000", "--binary", "-n", "-0"],
             "justMyCode": true
         },
         {

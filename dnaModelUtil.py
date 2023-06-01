@@ -5,6 +5,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch import nn
 from scipy import stats as st
+import copy
 
 def calc_margin_of_error(targets: np.array):
   σ = np.std(targets)
@@ -107,6 +108,7 @@ def averageDiff(data: list):
     return np.sum(diffs)/len(diffs)
   
 def printStats(data: list, name="", other=[]):
+    data = copy.deepcopy(data)
     print(f"+---------- {name} ----------")
     print(f"| total number of experiments: {len(data)}")
     print(f"| min: {np.min(data)}")
