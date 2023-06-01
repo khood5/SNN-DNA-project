@@ -159,8 +159,3 @@ if __name__ == "__main__":
         write = csv.writer(outFile)
         write.writerows(indexes)
     settings.save_settings()
-    
-        
-        
-    
-        
