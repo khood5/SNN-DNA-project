@@ -12,7 +12,7 @@ def calc_margin_of_error(targets: np.array):
   z = st.zscore(targets)
   return z * (σ/np.sqrt(n))
 
-def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, return_dict, epochs, margin_of_error, device=torch.device("cpu"), capacity=700):
+def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, return_dict, epochs, margin_of_error, device=torch.device("cpu"), capacity=700, printStatus=False):
   model = nn.Sequential(
             nn.Linear(featIn,capacity),
             nn.ReLU(),
@@ -29,15 +29,21 @@ def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, 
   losses = []
   accs = []
   print(f"training {name} on {device}...")
-  for e in range(epochs): 
+  for e in range(epochs):
+    avgLossTrain = []
+    currentAccTrain = [] 
     model.train()
     for i, (inputs, targets) in enumerate(trainData):
         inputs, targets= inputs.float().to(device), targets.float().to(device)
         outputs = model(inputs)
         loss = MSE(outputs, targets)
+        avgLossTrain.append(float(loss.item()))
         adam.zero_grad()
         loss.backward()
         adam.step()
+        totalCorrect = torch.sum(torch.isclose(outputs.int(), targets.int(), atol=em))
+        totalCorrect = totalCorrect.item()
+        currentAccTrain.append(float(totalCorrect/len(targets)))
         
     avgLoss = []
     currentAcc = []
@@ -50,12 +56,17 @@ def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, 
         totalCorrect = torch.sum(torch.isclose(outputs.int(), targets.int(), atol=margin_of_error))
         totalCorrect = totalCorrect.clone().detach().cpu().numpy()
         currentAcc.append(float(totalCorrect/len(targets)))
+        if not printStatus:
+          print(f"\
+          epoch: {e}/{epochs}\t \
+          Train Loss:{'%.4f' % (np.sum(avgLossTrain)/len(avgLossTrain))} Valid Loss:{'%.4f' % (np.sum(avgLoss)/len(avgLoss))}\t \
+          Train accuracy:{'%.4f' % (np.sum(currentAccTrain)/len(currentAccTrain))} Valid accuracy:{'%.4f' % (np.sum(currentAcc)/len(currentAcc))} \
+          ",end="\x1b\r")
     lastAcc = accs[-1] if accs else -1
     if np.sum(currentAcc)/len(currentAcc) > lastAcc:
       modelPath = f"./Models/smallTrain/{name.replace(' ', '_')}.pt"
       torch.save(model.state_dict(),modelPath)
       return_dict[name] = {"path":f"{modelPath}", "acc": np.sum(currentAcc)/len(currentAcc)}
-      
     accs.append(float(np.sum(currentAcc)/len(currentAcc)))
     losses.append(float(np.sum(avgLoss)/len(avgLoss)))
   del model
