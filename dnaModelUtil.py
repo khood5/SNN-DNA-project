@@ -13,19 +13,19 @@ def calc_margin_of_error(targets: np.array):
   z = st.zscore(targets)
   return z * (σ/np.sqrt(n))
 
-def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, return_dict, epochs, margin_of_error, device=torch.device("cpu"), capacity=700, printStatus=False):
+def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, return_dict: dict, epochs: int, margin_of_error=20, device=torch.device("cpu"), capacity=700, printStatus=False):
   model = nn.Sequential(
             nn.Linear(featIn,capacity),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Dropout(p=0.2),
             nn.Linear(capacity,capacity),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Dropout(p=0.2),
             nn.Linear(capacity,capacity),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(capacity,1),
           ).to(device)
-  MSE = nn.MSELoss(reduction = 'sum')
+  MSE = nn.MSELoss(reduction = 'mean')
   adam = torch.optim.Adam(model.parameters(),lr=0.000001,weight_decay=1e-5)
   losses = []
   accs = []
@@ -42,7 +42,7 @@ def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, 
         adam.zero_grad()
         loss.backward()
         adam.step()
-        totalCorrect = torch.sum(torch.isclose(outputs.int(), targets.int(), atol=em))
+        totalCorrect = torch.sum(torch.isclose(outputs.int(), targets.int(), atol=margin_of_error))
         totalCorrect = totalCorrect.item()
         currentAccTrain.append(float(totalCorrect/len(targets)))
         
@@ -57,7 +57,7 @@ def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, 
         totalCorrect = torch.sum(torch.isclose(outputs.int(), targets.int(), atol=margin_of_error))
         totalCorrect = totalCorrect.clone().detach().cpu().numpy()
         currentAcc.append(float(totalCorrect/len(targets)))
-        if not printStatus:
+        if printStatus:
           print(f"\
           epoch: {e}/{epochs}\t \
           Train Loss:{'%.4f' % (np.sum(avgLossTrain)/len(avgLossTrain))} Valid Loss:{'%.4f' % (np.sum(avgLoss)/len(avgLoss))}\t \
