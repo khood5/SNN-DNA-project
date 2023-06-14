@@ -122,3 +122,47 @@ def printStats(data: list, name="", other=[]):
       for o in other:
         print(f"| {o}")
     print("+------------------")
+    
+class RNNModel(nn.Module):
+  def __init__(self, featIn, capacity, hiddenLayers=2):
+      super(RNNModel, self).__init__()
+      self.capacity = capacity
+      self.featIn = featIn
+      self.hiddenLayers = hiddenLayers
+      # RNN
+      self.rnn = nn.RNN(featIn, self.capacity, hiddenLayers, batch_first=True, nonlinearity='relu', dropout=0.2)
+      
+      # Readout layer
+      self.fc = nn.Linear(capacity, 1)
+  
+  def forward(self, x):
+      
+      # Initialize hidden state with zeros
+      h0 = torch.zeros(self.hiddenLayers, x.size(0),self.capacity).to(device)
+          
+      # One time step
+      out, hn = self.rnn(x, h0)
+      out = self.fc(out[:, -1, :]) 
+      return out
+    
+class MLPModel(nn.Module):
+    def __init__(self, featIn, capacity):
+        super().__init__()
+        self.input = nn.Linear(featIn,capacity)
+        self.inputAct = nn.Tanh()
+        self.inputDropout = nn.Dropout(p=0.2)
+        self.hidden1 = nn.Linear(capacity,capacity)
+        self.hidden1Act = nn.Tanh()
+        self.hidden1Dropout = nn.Dropout(p=0.2)
+        self.hidden2 = nn.Linear(capacity,capacity)
+        self.hidden2Act = nn.Tanh()
+        self.output = nn.Linear(capacity,1)
+        
+    def forward(self, x):
+        x = self.inputAct(self.input(x))
+        x = self.inputDropout(x)
+        x = self.hidden1Act(self.hidden1(x))
+        x = self.hidden1Dropout(x)
+        x = self.hidden2Act(self.hidden2(x))
+        x = self.output(x)
+        return x
