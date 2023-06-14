@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from torch import nn
 from scipy import stats as st
 import copy
+import os
 
 def calc_margin_of_error(targets: np.array):
   σ = np.std(targets)
@@ -13,7 +14,7 @@ def calc_margin_of_error(targets: np.array):
   z = st.zscore(targets)
   return z * (σ/np.sqrt(n))
 
-def train(trainData: DataLoader, validData: DataLoader, name: str, model, lossfunction, optim, return_dict: dict, epochs: int, margin_of_error=20, device=torch.device("cpu"), printStatus=False):
+def train(trainData: DataLoader, validData: DataLoader, name: str, savePath: str, model, lossfunction, optim, return_dict: dict, epochs: int, margin_of_error=20, device=torch.device("cpu"), printStatus=False):
   model.to(device)
   losses = []
   accs = []
@@ -53,7 +54,7 @@ def train(trainData: DataLoader, validData: DataLoader, name: str, model, lossfu
           ",end="\x1b\r")
     lastAcc = accs[-1] if accs else -1
     if np.sum(currentAcc)/len(currentAcc) > lastAcc:
-      modelPath = f"./Models/smallTrain/{name.replace(' ', '_')}.pt"
+      modelPath = os.path.join(savePath,f"{name.replace(' ', '_')}.pt")
       torch.save(model.state_dict(),modelPath)
       return_dict[name] = {"path":f"{modelPath}", "acc": np.sum(currentAcc)/len(currentAcc)}
     accs.append(float(np.sum(currentAcc)/len(currentAcc)))
