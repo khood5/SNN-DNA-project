@@ -13,20 +13,8 @@ def calc_margin_of_error(targets: np.array):
   z = st.zscore(targets)
   return z * (σ/np.sqrt(n))
 
-def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, return_dict: dict, epochs: int, margin_of_error=20, device=torch.device("cpu"), capacity=700, printStatus=False):
-  model = nn.Sequential(
-            nn.Linear(featIn,capacity),
-            nn.Tanh(),
-            nn.Dropout(p=0.2),
-            nn.Linear(capacity,capacity),
-            nn.Tanh(),
-            nn.Dropout(p=0.2),
-            nn.Linear(capacity,capacity),
-            nn.Tanh(),
-            nn.Linear(capacity,1),
-          ).to(device)
-  MSE = nn.MSELoss(reduction = 'mean')
-  adam = torch.optim.Adam(model.parameters(),lr=0.000001,weight_decay=1e-5)
+def train(trainData: DataLoader, validData: DataLoader, name: str, model, lossfunction, optim, return_dict: dict, epochs: int, margin_of_error=20, device=torch.device("cpu"), printStatus=False):
+  model.to(device)
   losses = []
   accs = []
   print(f"training {name} on {device}...")
@@ -37,11 +25,11 @@ def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, 
     for i, (inputs, targets) in enumerate(trainData):
         inputs, targets= inputs.float().to(device), targets.float().to(device)
         outputs = model(inputs)
-        loss = MSE(outputs, targets)
+        loss = lossfunction(outputs, targets)
         avgLossTrain.append(float(loss.item()))
-        adam.zero_grad()
+        optim.zero_grad()
         loss.backward()
-        adam.step()
+        optim.step()
         totalCorrect = torch.sum(torch.isclose(outputs.int(), targets.int(), atol=margin_of_error))
         totalCorrect = totalCorrect.item()
         currentAccTrain.append(float(totalCorrect/len(targets)))
@@ -52,7 +40,7 @@ def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, 
     for i, (inputs, targets) in enumerate(validData):
         inputs, targets= inputs.float().to(device), targets.float().to(device)
         outputs = model(inputs)
-        loss = MSE(outputs, targets)
+        loss = lossfunction(outputs, targets)
         avgLoss.append(float(loss.clone().detach().cpu().numpy()))
         totalCorrect = torch.sum(torch.isclose(outputs.int(), targets.int(), atol=margin_of_error))
         totalCorrect = totalCorrect.clone().detach().cpu().numpy()
@@ -73,18 +61,8 @@ def train(trainData: DataLoader, validData: DataLoader, name: str, featIn: int, 
   del model
   torch.cuda.empty_cache()
   
-def test(testData: DataLoader, modelPath: str, name: str, featIn: int, return_dict, epochs, margin_of_error, device=torch.device("cpu"), capacity=700):
-  model = nn.Sequential(
-            nn.Linear(featIn,capacity),
-            nn.ReLU(),
-            nn.Dropout(p=0.2),
-            nn.Linear(capacity,capacity),
-            nn.ReLU(),
-            nn.Dropout(p=0.2),
-            nn.Linear(capacity,capacity),
-            nn.ReLU(),
-            nn.Linear(capacity,1),
-          ).to(device)
+def test(testData: DataLoader, modelPath: str, name: str, model, return_dict: dict, epochs: int, margin_of_error=20, device=torch.device("cpu")):
+  model.to(device)
   model.load_state_dict(torch.load(modelPath))
   model.to(device)
   model.eval()
@@ -124,11 +102,12 @@ def printStats(data: list, name="", other=[]):
     print("+------------------")
     
 class RNNModel(nn.Module):
-  def __init__(self, featIn, capacity, hiddenLayers=2):
+  def __init__(self, featIn, capacity, hiddenLayers=2, device=torch.device("cpu")):
       super(RNNModel, self).__init__()
       self.capacity = capacity
       self.featIn = featIn
       self.hiddenLayers = hiddenLayers
+      self.device = device
       # RNN
       self.rnn = nn.RNN(featIn, self.capacity, hiddenLayers, batch_first=True, nonlinearity='relu', dropout=0.2)
       
@@ -136,12 +115,7 @@ class RNNModel(nn.Module):
       self.fc = nn.Linear(capacity, 1)
   
   def forward(self, x):
-      
-      # Initialize hidden state with zeros
-      h0 = torch.zeros(self.hiddenLayers, x.size(0),self.capacity).to(device)
-          
-      # One time step
-      out, hn = self.rnn(x, h0)
+      out, hn = self.rnn(x) # Initialize hidden state will be zeros
       out = self.fc(out[:, -1, :]) 
       return out
     
