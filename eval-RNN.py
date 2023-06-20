@@ -9,6 +9,8 @@ from dnaModelUtil import RNNModel
 from dnaDataloader import addData
 from dnaDataloader import expermentDataloader
 from torch.utils.data import DataLoader
+import json
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 folder = '/home/khood/GitHub/SNN-DNA-project/Prepocessing/sorted/1800_nM_AR_5000'
 oneMinInFPS = 1200
@@ -53,16 +55,19 @@ def makeDataset(oneTimeUnitInFPS:int, totalRuntime:int, folder:str, batch_size=1
     return (trainDataset, validDataset, testDataset)
 
 rnn_return_dict = {}
-featIn = oneMinInFPS
-epochs = 7500
+featIn = 200
+epochs = 500
 modelSavePath = "./Models/variedMovie/"
-for totalRuntime in range(1,31):
-      trainDataset, validDataset, testDataset = makeDataset(oneMinInFPS, totalRuntime, folder)
-      model = RNNModel(featIn=oneMinInFPS, capacity=int(featIn*0.25), hiddenLayers=4).to(device)
-      MSE = nn.MSELoss(reduction = 'mean')
-      adam = torch.optim.Adam(model.parameters(),lr=0.00001,weight_decay=1e-5)
-      train(trainData=trainDataset, validData=validDataset, name=f"RNN_{totalRuntime}_min", model=model, 
+for totalRuntime in range(featIn, (oneMinInFPS*2)+1, featIn):
+    print(f"Trying {totalRuntime} frames in {featIn} timesteps...")
+    trainDataset, validDataset, testDataset = makeDataset(featIn, totalRuntime, folder)
+    model = RNNModel(featIn=featIn, capacity=int(400), hiddenLayers=4).to(device)
+    MSE = nn.MSELoss(reduction = 'mean')
+    adam = torch.optim.Adam(model.parameters(),lr=0.00001,weight_decay=1e-5)
+    train(trainData=trainDataset, validData=validDataset, name=f"RNN_{totalRuntime}_min", model=model, 
             lossfunction=MSE, optim=adam, return_dict=rnn_return_dict, epochs=epochs,
-            device=device, printStatus=True, savePath=modelSavePath)
-      
+            device=device, savePath=modelSavePath)
+
+with open(f'{modelSavePath}rnn_valid_acc.json', 'w') as convert_file:
+     convert_file.write(json.dumps(rnn_return_dict))
 print(rnn_return_dict)

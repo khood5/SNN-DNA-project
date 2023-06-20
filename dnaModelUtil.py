@@ -116,7 +116,9 @@ class RNNModel(nn.Module):
       self.fc = nn.Linear(capacity, 1)
   
   def forward(self, x):
-      out, hn = self.rnn(x) # Initialize hidden state will be zeros
+      # Initialize hidden state with zeros
+      h0 = torch.zeros(self.hiddenLayers, x.size(0),self.capacity).to(x.get_device())
+      out, hn = self.rnn(x, h0)
       out = self.fc(out[:, -1, :]) 
       return out
     
