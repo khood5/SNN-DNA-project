@@ -61,6 +61,7 @@ def train(trainData: DataLoader, validData: DataLoader, name: str, savePath: str
     losses.append(float(np.sum(avgLoss)/len(avgLoss)))
   del model
   torch.cuda.empty_cache()
+  return {"loss_val": losses, "accuracy_val":accs }
   
 def test(testData: DataLoader, modelPath: str, name: str, model, return_dict: dict, epochs: int, margin_of_error=20, device=torch.device("cpu")):
   model.to(device)
