@@ -9,7 +9,7 @@ class expermentDataloader(Dataset):
         self,
         index_file: str, 
         data_path: str,
-        length = None, # in frames i.e. number of frames to include in input vector
+        length = 0, # in frames i.e. number of frames to include in input vector
         start = 0 # starting point in the experment 
     ):
         self.root_dir = data_path
@@ -30,14 +30,15 @@ class expermentDataloader(Dataset):
     def __len__(self):
         return len(self.expermentMovieFrames)
 
-# takes a expermentDataset and a rhs size splits the dataset into 2 set with rhs matching the desierd size and lhs having the remmaing elements 
-def addData(lhs: list, rhs: list, expermentDataset: expermentDataloader, rhsSize=None):
-    rhsSize = int(len(expermentDataset)*0.9) if rhsSize == None else rhsSize
-    assert not rhsSize > len(expermentDataset)
-    datasetIndexes = list(range(len(expermentDataset)))
+# takes a dataset (list of all data) and a rhs size splits the dataset into 2 
+# set with rhs matching the desierd size and lhs having the remmaing elements 
+def addData(lhs: list, rhs: list, dataset: list, rhsSize=None):
+    rhsSize = int(len(dataset)*0.9) if rhsSize == None else rhsSize
+    assert not rhsSize > len(dataset)
+    datasetIndexes = list(range(len(dataset)))
     rhsIndexes = random.sample(datasetIndexes, k=rhsSize)
     for i in datasetIndexes:
         if i in rhsIndexes:
-            rhs.append(expermentDataset[i])
+            rhs.append(dataset[i])
         else:
-            lhs.append(expermentDataset[i])
+            lhs.append(dataset[i])

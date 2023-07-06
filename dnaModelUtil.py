@@ -8,17 +8,18 @@ from scipy import stats as st
 import copy
 import os
 
-def calc_margin_of_error(targets: np.array):
+def calc_margin_of_error(targets: np.ndarray):
   σ = np.std(targets)
   n = len(targets)
   z = st.zscore(targets)
   return z * (σ/np.sqrt(n))
 
-def train(trainData: DataLoader, validData: DataLoader, name: str, savePath: str, model, lossfunction, optim, return_dict: dict, epochs: int, margin_of_error=20, device=torch.device("cpu"), printStatus=False):
+def train(trainData: DataLoader, validData: DataLoader, name: str, savePath: str, model, lossfunction, optim, epochs: int, return_dict={}, margin_of_error=20, device=torch.device("cpu"), printStatus=False):
   model.to(device)
   losses = []
   accs = []
-  print(f"training {name} on {device}...")
+  if printStatus:
+    print(f"training {name} on {device}...")
   for e in range(epochs):
     avgLossTrain = []
     currentAccTrain = [] 
@@ -144,3 +145,14 @@ class MLPModel(nn.Module):
         x = self.hidden2Act(self.hidden2(x))
         x = self.output(x)
         return x
+      
+# progress_bar for when stuff takes a while to load
+def progress_bar(current, total, bar_length=20):
+    fraction = current / total
+
+    arrow = int(fraction * bar_length - 1) * '-' + '>'
+    padding = int(bar_length - len(arrow)) * ' '
+
+    ending = '\n' if current == total else '\r'
+
+    print(f'Progress: [{arrow}{padding}] {int(fraction*100)}%', end=ending)
