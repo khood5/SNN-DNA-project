@@ -73,19 +73,19 @@ def do_training():
 
 if __name__ == "__main__":
     datasests = {}
-    maxLength = 3*oneMinInFPS
-    minLength = 1/oneMinInFPS
-    step = (1/oneMinInFPS)*100000
+    maxLength = 20*oneMinInFPS
+    minLength = oneMinInFPS
+    step = oneMinInFPS
     current = 0
     total = len(np.arange(minLength, maxLength+step, step))
     print("making data...")
     for length in np.arange(minLength, maxLength+step, step):
-        datasests[f"{length}"] = makeDatasets(length, folder)
+        datasests[f"{float(length)}"] = makeDatasets(length, folder)
         current += 1
         progress_bar(current=current, total=total, bar_length=20)
     print("running training...")
     results = do_training()
-    with open('/home/khood/GitHub/SNN-DNA-project/Models/mlp_1frame_1min_acc.json', "w") as f:
+    with open('/home/khood/GitHub/SNN-DNA-project/Models/mlp_1min_20min_acc.json', "w") as f:
         json.dump(results, f)
     header = []
     acc_data = []
