@@ -7,7 +7,10 @@ import os
 import csv
 import hashlib
 
-def addMissingFrames(file_df:  pd.DataFrame):
+def convertExcelToSpikeTrain(file: str):
+    settings = Settings()
+    file_df = pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,file),header=None,names=["Frame Number", "Intesity"])
+    file_df = shorten(file_df)
     frames = []
     lastFrameNumber = 0
     for l in range(0,len(file_df)):
@@ -21,19 +24,6 @@ def addMissingFrames(file_df:  pd.DataFrame):
     frames += [0] * missingEventsFromEndOfExperment
     return frames
 
-def convertExcelToEventListByFrameNumber(file: str):
-    settings = Settings()
-    file_df = pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,file),header=None,names=["Frame Number", "Intesity"])
-    lastFrame = list(file_df.iloc[:, 0])[-1]
-    frames = []
-    if settings._LENGTH >= lastFrame:
-        file_df = shorten(file_df)
-        frames = addMissingFrames(file_df)
-    else:
-        frames = addMissingFrames(file_df)
-    return frames
-    
-
 def shorten(file_df: pd.DataFrame):
     settings = Settings()
     cutoffIndex = 1
@@ -46,20 +36,46 @@ def shorten(file_df: pd.DataFrame):
 
 # note: that depending on weather or not the spike train is binary or base on intesity the values in "spikeTrain" can be either 1/0 or double/0
 # see binary argument for more details
-def wrtieEventsToFile(frameNumbers: list, eventListFilename: str, sourceFilename: str, indexes: list):
+def wrtieSpikeTrainToFile(spikeTrain: list, SpikeTrainFilename: str, sourceFilename: str, indexes: list):
     settings = Settings()
-    outputSpikeTrainFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",eventListFilename)
+    outputSpikeTrainFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",SpikeTrainFilename)
     with open(outputSpikeTrainFile, 'w+', newline='') as outFile:
         write = csv.writer(outFile)
-        for frame in frameNumbers : write.writerow ([frame])
+        for spike in spikeTrain : write.writerow ([spike])
     totalNumberOfEvents = len(pd.read_excel(os.path.join(settings._INPUT_DIRECTORY,sourceFilename),header=None,names=["Frame Number", "Intesity"]))
     
-    indexes.append([eventListFilename,totalNumberOfEvents])
+    spikeTrainClass = getClassOfSpikeTrain(totalNumberOfEvents)
+    indexes.append([SpikeTrainFilename,spikeTrainClass])
+
+
+def getClassOfSpikeTrain(spikeCount: int):
+    settings = Settings()
+    
+    if settings._SETTINGS_FILE == None:
+        return spikeCount
+    
+    high = -1
+    low = -1
+    with open(settings._SETTINGS_FILE, newline='') as thresholdSettings:
+        thresholdReader = csv.reader(thresholdSettings, delimiter=',')
+        for row in thresholdReader:
+            if row[0].lower().strip() == "high":
+                high = int(row[1])
+            elif row[0].lower().strip() == "low":
+                low = int(row[1])
+    
+    if spikeCount >= high:
+        return settings._HIGH_CLASS_CODE
+    if spikeCount <= low:
+        return settings._LOW_CLASS_CODE
+    return settings._MEDIUM_CLASS_CODE
+        
 
 class Settings:
     _INPUT_DIRECTORY    = None  # directory with the files to be converted to spike trains
     _OUTPUT_DIRECTORY   = None  # output directory for spike train files     
     _BINARY             = None  # if true then events are converted to 1 or spike 0 for no spike, otherwise intensity of event is used for spike
+    _SETTINGS_FILE      = None  # file path to seetings; settings should define the high and low thresholds for classes (see settings argument for more details)
     _LENGTH             = None  # number of seconds to use for training (events after this time will not be included in the spike trains)
     _FPS                = None  # frames per second 
     _EVENTS_PER_SEC     = None  # number of events per second of experment 
@@ -81,8 +97,8 @@ class Settings:
                     print("!!! Missing 'preprocess_logs' directory\n writing logs to this directory")
                     f = open(f"./preprocess_{dt_string}_saved_args.csv", "w+")
             
-                f.write("_INPUT_DIRECTORY,_OUTPUT_DIRECTORY,_BINARY,_LENGTH,_FPS\n")
-                f.write(f"{self._INPUT_DIRECTORY},{self._OUTPUT_DIRECTORY},{self._BINARY},{self._LENGTH},{self._FPS}\n")
+                f.write("_INPUT_DIRECTORY,_OUTPUT_DIRECTORY,_BINARY,_SETTINGS_FILE,_LENGTH,_FPS\n")
+                f.write(f"{self._INPUT_DIRECTORY},{self._OUTPUT_DIRECTORY},{self._BINARY},{self._SETTINGS_FILE},{self._LENGTH},{self._FPS}\n")
                 f.write(f"run at {dt_string}")
                 f.close()
         
@@ -106,6 +122,17 @@ if __name__ == "__main__":
                         action=argparse.BooleanOptionalAction)
     parser.add_argument('-n','--num_class', help="the acutal count is used for the class (i.e. 108 instead of high)\n", 
                         action=argparse.BooleanOptionalAction)
+    parser.add_argument('-s','--settings', help='''Settings file: classes are based on the sum of total events, thier intesity is not considerd when counting events \n\
+    high: number of recoreded events to be considerd in the high class \n\
+    low:  number of recoreded events to be considerd in the low class \n\
+    for values between high and low they are considerd medium \n\
+    example: \n\
+    high, 300 \n\
+    low, 230 \n\
+    \n\
+    If no settings file is supplied (i.e. None) then raw event counts will be used for classes \n\
+    ''',
+    type=str)
     parser.add_argument('-l','--length', help='''number of seconds to use for training (events after this time will not be included in the spike trains)\n\
                         DEFAULT: {}'''.format(DEFAULT_LENGTH), 
                         type=float,
@@ -125,6 +152,7 @@ if __name__ == "__main__":
     settings._OUTPUT_DIRECTORY = args.output_directory
     settings._BINARY = args.binary
     settings._NUM_CLASS = args.num_class
+    settings._SETTINGS_FILE = args.settings
     settings._LENGTH = args.length
     settings._FPS = args.frams_per_second
     settings._SILENT = args.silent
@@ -136,6 +164,10 @@ if __name__ == "__main__":
     if settings._SILENT != True:
         print(f"reading files from  :{Path(settings._INPUT_DIRECTORY)}")
         print(f"creating files in   :{Path(settings._OUTPUT_DIRECTORY)}")
+        if settings._SETTINGS_FILE:
+            print(f"settings file       :{Path(settings._SETTINGS_FILE)}")
+        else:
+            print(f"spike count")
     
     if os.path.isdir(settings._INPUT_DIRECTORY):
         inputFiles = os.listdir(settings._INPUT_DIRECTORY)
@@ -150,12 +182,17 @@ if __name__ == "__main__":
         supported_file_types = ["xls", "xlsx", "xlsm", "xlsb", "xlt", "xls", "xml", "xlw", "xlr"]
         if f.split(".")[-1] not in supported_file_types:
             continue # skip none excel files
-        spikeTrain = convertExcelToEventListByFrameNumber(f)
+        spikeTrain = convertExcelToSpikeTrain(f)
         h = hashlib.sha256()
         h.update((f+str(datetime.now().timestamp())).encode('utf-8'))
-        wrtieEventsToFile(spikeTrain, f"{h.hexdigest()}.csv", f, indexes)
+        wrtieSpikeTrainToFile(spikeTrain, f"{h.hexdigest()}.csv", f, indexes)
     outputIndexFile = os.path.join(f"{settings._OUTPUT_DIRECTORY}",INDEX_FILE_NAME)
     with open(outputIndexFile, 'a+', newline='') as outFile:
         write = csv.writer(outFile)
         write.writerows(indexes)
     settings.save_settings()
+    
+        
+        
+    
+        
