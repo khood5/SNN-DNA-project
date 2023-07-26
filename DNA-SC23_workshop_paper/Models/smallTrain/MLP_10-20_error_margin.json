@@ -1,0 +1,266 @@
+{
+    "50_nM_AR_600_10": {
+        "path": "./Models/smallTrain/50_nM_AR_600_10.pt",
+        "acc": 0.5900000000000001
+    },
+    "1200_nM_AR_600_10": {
+        "path": "./Models/smallTrain/1200_nM_AR_600_10.pt",
+        "acc": 0.39
+    },
+    "800_nM_AR_600_10": {
+        "path": "./Models/smallTrain/800_nM_AR_600_10.pt",
+        "acc": 0.26
+    },
+    "1800_nM_AR_600_10": {
+        "path": "./Models/smallTrain/1800_nM_AR_600_10.pt",
+        "acc": 0.24000000000000002
+    },
+    "100_nM_AR_600_10": {
+        "path": "./Models/smallTrain/100_nM_AR_600_10.pt",
+        "acc": 0.53
+    },
+    "400_nM_AR_600_10": {
+        "path": "./Models/smallTrain/400_nM_AR_600_10.pt",
+        "acc": 0.27
+    },
+    "50_nM_AR_600_11": {
+        "path": "./Models/smallTrain/50_nM_AR_600_11.pt",
+        "acc": 0.63
+    },
+    "1200_nM_AR_600_11": {
+        "path": "./Models/smallTrain/1200_nM_AR_600_11.pt",
+        "acc": 0.41000000000000003
+    },
+    "800_nM_AR_600_11": {
+        "path": "./Models/smallTrain/800_nM_AR_600_11.pt",
+        "acc": 0.31000000000000005
+    },
+    "1800_nM_AR_600_11": {
+        "path": "./Models/smallTrain/1800_nM_AR_600_11.pt",
+        "acc": 0.27
+    },
+    "100_nM_AR_600_11": {
+        "path": "./Models/smallTrain/100_nM_AR_600_11.pt",
+        "acc": 0.56
+    },
+    "400_nM_AR_600_11": {
+        "path": "./Models/smallTrain/400_nM_AR_600_11.pt",
+        "acc": 0.26
+    },
+    "50_nM_AR_600_12": {
+        "path": "./Models/smallTrain/50_nM_AR_600_12.pt",
+        "acc": 0.64
+    },
+    "1200_nM_AR_600_12": {
+        "path": "./Models/smallTrain/1200_nM_AR_600_12.pt",
+        "acc": 0.45999999999999996
+    },
+    "800_nM_AR_600_12": {
+        "path": "./Models/smallTrain/800_nM_AR_600_12.pt",
+        "acc": 0.33
+    },
+    "1800_nM_AR_600_12": {
+        "path": "./Models/smallTrain/1800_nM_AR_600_12.pt",
+        "acc": 0.33
+    },
+    "100_nM_AR_600_12": {
+        "path": "./Models/smallTrain/100_nM_AR_600_12.pt",
+        "acc": 0.5900000000000001
+    },
+    "400_nM_AR_600_12": {
+        "path": "./Models/smallTrain/400_nM_AR_600_12.pt",
+        "acc": 0.3
+    },
+    "50_nM_AR_600_13": {
+        "path": "./Models/smallTrain/50_nM_AR_600_13.pt",
+        "acc": 0.6500000000000001
+    },
+    "1200_nM_AR_600_13": {
+        "path": "./Models/smallTrain/1200_nM_AR_600_13.pt",
+        "acc": 0.47000000000000003
+    },
+    "800_nM_AR_600_13": {
+        "path": "./Models/smallTrain/800_nM_AR_600_13.pt",
+        "acc": 0.34
+    },
+    "1800_nM_AR_600_13": {
+        "path": "./Models/smallTrain/1800_nM_AR_600_13.pt",
+        "acc": 0.35000000000000003
+    },
+    "100_nM_AR_600_13": {
+        "path": "./Models/smallTrain/100_nM_AR_600_13.pt",
+        "acc": 0.6400000000000001
+    },
+    "400_nM_AR_600_13": {
+        "path": "./Models/smallTrain/400_nM_AR_600_13.pt",
+        "acc": 0.30000000000000004
+    },
+    "50_nM_AR_600_14": {
+        "path": "./Models/smallTrain/50_nM_AR_600_14.pt",
+        "acc": 0.66
+    },
+    "1200_nM_AR_600_14": {
+        "path": "./Models/smallTrain/1200_nM_AR_600_14.pt",
+        "acc": 0.48000000000000004
+    },
+    "800_nM_AR_600_14": {
+        "path": "./Models/smallTrain/800_nM_AR_600_14.pt",
+        "acc": 0.37000000000000005
+    },
+    "1800_nM_AR_600_14": {
+        "path": "./Models/smallTrain/1800_nM_AR_600_14.pt",
+        "acc": 0.4
+    },
+    "100_nM_AR_600_14": {
+        "path": "./Models/smallTrain/100_nM_AR_600_14.pt",
+        "acc": 0.66
+    },
+    "400_nM_AR_600_14": {
+        "path": "./Models/smallTrain/400_nM_AR_600_14.pt",
+        "acc": 0.33
+    },
+    "50_nM_AR_600_15": {
+        "path": "./Models/smallTrain/50_nM_AR_600_15.pt",
+        "acc": 0.66
+    },
+    "1200_nM_AR_600_15": {
+        "path": "./Models/smallTrain/1200_nM_AR_600_15.pt",
+        "acc": 0.49000000000000005
+    },
+    "800_nM_AR_600_15": {
+        "path": "./Models/smallTrain/800_nM_AR_600_15.pt",
+        "acc": 0.4
+    },
+    "1800_nM_AR_600_15": {
+        "path": "./Models/smallTrain/1800_nM_AR_600_15.pt",
+        "acc": 0.43000000000000005
+    },
+    "100_nM_AR_600_15": {
+        "path": "./Models/smallTrain/100_nM_AR_600_15.pt",
+        "acc": 0.67
+    },
+    "400_nM_AR_600_15": {
+        "path": "./Models/smallTrain/400_nM_AR_600_15.pt",
+        "acc": 0.33
+    },
+    "50_nM_AR_600_16": {
+        "path": "./Models/smallTrain/50_nM_AR_600_16.pt",
+        "acc": 0.68
+    },
+    "1200_nM_AR_600_16": {
+        "path": "./Models/smallTrain/1200_nM_AR_600_16.pt",
+        "acc": 0.51
+    },
+    "800_nM_AR_600_16": {
+        "path": "./Models/smallTrain/800_nM_AR_600_16.pt",
+        "acc": 0.41000000000000003
+    },
+    "1800_nM_AR_600_16": {
+        "path": "./Models/smallTrain/1800_nM_AR_600_16.pt",
+        "acc": 0.44
+    },
+    "100_nM_AR_600_16": {
+        "path": "./Models/smallTrain/100_nM_AR_600_16.pt",
+        "acc": 0.6900000000000001
+    },
+    "400_nM_AR_600_16": {
+        "path": "./Models/smallTrain/400_nM_AR_600_16.pt",
+        "acc": 0.37000000000000005
+    },
+    "50_nM_AR_600_17": {
+        "path": "./Models/smallTrain/50_nM_AR_600_17.pt",
+        "acc": 0.6900000000000001
+    },
+    "1200_nM_AR_600_17": {
+        "path": "./Models/smallTrain/1200_nM_AR_600_17.pt",
+        "acc": 0.53
+    },
+    "800_nM_AR_600_17": {
+        "path": "./Models/smallTrain/800_nM_AR_600_17.pt",
+        "acc": 0.43000000000000005
+    },
+    "1800_nM_AR_600_17": {
+        "path": "./Models/smallTrain/1800_nM_AR_600_17.pt",
+        "acc": 0.47000000000000003
+    },
+    "100_nM_AR_600_17": {
+        "path": "./Models/smallTrain/100_nM_AR_600_17.pt",
+        "acc": 0.7000000000000001
+    },
+    "400_nM_AR_600_17": {
+        "path": "./Models/smallTrain/400_nM_AR_600_17.pt",
+        "acc": 0.41
+    },
+    "50_nM_AR_600_18": {
+        "path": "./Models/smallTrain/50_nM_AR_600_18.pt",
+        "acc": 0.7000000000000001
+    },
+    "1200_nM_AR_600_18": {
+        "path": "./Models/smallTrain/1200_nM_AR_600_18.pt",
+        "acc": 0.53
+    },
+    "800_nM_AR_600_18": {
+        "path": "./Models/smallTrain/800_nM_AR_600_18.pt",
+        "acc": 0.43000000000000005
+    },
+    "1800_nM_AR_600_18": {
+        "path": "./Models/smallTrain/1800_nM_AR_600_18.pt",
+        "acc": 0.5
+    },
+    "100_nM_AR_600_18": {
+        "path": "./Models/smallTrain/100_nM_AR_600_18.pt",
+        "acc": 0.7100000000000001
+    },
+    "400_nM_AR_600_18": {
+        "path": "./Models/smallTrain/400_nM_AR_600_18.pt",
+        "acc": 0.43000000000000005
+    },
+    "50_nM_AR_600_19": {
+        "path": "./Models/smallTrain/50_nM_AR_600_19.pt",
+        "acc": 0.7100000000000001
+    },
+    "1200_nM_AR_600_19": {
+        "path": "./Models/smallTrain/1200_nM_AR_600_19.pt",
+        "acc": 0.55
+    },
+    "800_nM_AR_600_19": {
+        "path": "./Models/smallTrain/800_nM_AR_600_19.pt",
+        "acc": 0.43000000000000005
+    },
+    "1800_nM_AR_600_19": {
+        "path": "./Models/smallTrain/1800_nM_AR_600_19.pt",
+        "acc": 0.51
+    },
+    "100_nM_AR_600_19": {
+        "path": "./Models/smallTrain/100_nM_AR_600_19.pt",
+        "acc": 0.7100000000000001
+    },
+    "400_nM_AR_600_19": {
+        "path": "./Models/smallTrain/400_nM_AR_600_19.pt",
+        "acc": 0.45000000000000007
+    },
+    "50_nM_AR_600_20": {
+        "path": "./Models/smallTrain/50_nM_AR_600_20.pt",
+        "acc": 0.7100000000000001
+    },
+    "1200_nM_AR_600_20": {
+        "path": "./Models/smallTrain/1200_nM_AR_600_20.pt",
+        "acc": 0.56
+    },
+    "800_nM_AR_600_20": {
+        "path": "./Models/smallTrain/800_nM_AR_600_20.pt",
+        "acc": 0.45
+    },
+    "1800_nM_AR_600_20": {
+        "path": "./Models/smallTrain/1800_nM_AR_600_20.pt",
+        "acc": 0.53
+    },
+    "100_nM_AR_600_20": {
+        "path": "./Models/smallTrain/100_nM_AR_600_20.pt",
+        "acc": 0.7300000000000001
+    },
+    "400_nM_AR_600_20": {
+        "path": "./Models/smallTrain/400_nM_AR_600_20.pt",
+        "acc": 0.45
+    }
+}
