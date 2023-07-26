@@ -15,7 +15,6 @@ folder = '/home/khood/GitHub/SNN-DNA-project/Prepocessing/sorted/1800_nM_AR_5000
 oneMinInFPS = 1200
 batch_size = 10
 num_workers = 0
-device
 
 mlp_return_dict = {}
 epochs = 1000
