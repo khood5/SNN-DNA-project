@@ -1,0 +1,1 @@
+{"50_nM_AR_600": {"path": "./Models/RNN10Min/50_nM_AR_600.pt", "acc": 0.8699999999999999}, "1200_nM_AR_600": {"path": "./Models/RNN10Min/1200_nM_AR_600.pt", "acc": 0.31999999999999995}}

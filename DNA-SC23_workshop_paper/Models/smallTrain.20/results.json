@@ -1,26 +1,26 @@
 {
     "50_nM_AR_600": {
-        "path": "./Models/smallTrain/50_nM_AR_600.pt",
+        "path": "./Models/smallTrain.20/50_nM_AR_600.pt",
         "acc": 0.7200000000000001
     },
     "1200_nM_AR_600": {
-        "path": "./Models/smallTrain/1200_nM_AR_600.pt",
+        "path": "./Models/smallTrain.20/1200_nM_AR_600.pt",
         "acc": 0.5700000000000001
     },
     "800_nM_AR_600": {
-        "path": "./Models/smallTrain/800_nM_AR_600.pt",
+        "path": "./Models/smallTrain.20/800_nM_AR_600.pt",
         "acc": 0.5800000000000001
     },
     "1800_nM_AR_600": {
-        "path": "./Models/smallTrain/1800_nM_AR_600.pt",
+        "path": "./Models/smallTrain.20/1800_nM_AR_600.pt",
         "acc": 0.51
     },
     "100_nM_AR_600": {
-        "path": "./Models/smallTrain/100_nM_AR_600.pt",
+        "path": "./Models/smallTrain.20/100_nM_AR_600.pt",
         "acc": 0.7000000000000001
     },
     "400_nM_AR_600": {
-        "path": "./Models/smallTrain/400_nM_AR_600.pt",
+        "path": "./Models/smallTrain.20/400_nM_AR_600.pt",
         "acc": 0.41000000000000003
     }
 }
